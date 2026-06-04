@@ -1,0 +1,15 @@
+{
+  "name": "CareConnect",
+  "short_name": "CareConnect",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#f7fbfe",
+  "theme_color": "#0e8f7c",
+  "icons": [
+    {
+      "src": "favicon.svg",
+      "sizes": "64x64",
+      "type": "image/svg+xml"
+    }
+  ]
+}
