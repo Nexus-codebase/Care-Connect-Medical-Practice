@@ -458,6 +458,17 @@ a {
   margin-right: 0.35rem;
 }
 
+.flow-list a {
+  color: #005eb8;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.flow-list a:hover,
+.flow-list a:focus-visible {
+  color: #003f7a;
+}
+
 .appointment-shell {
   display: grid;
   grid-template-columns: 1fr 1fr;

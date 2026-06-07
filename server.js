@@ -219,7 +219,7 @@ async function sendConfirmationEmail(appointment, mode) {
           `Your ${appointment.type} appointment is confirmed for ${appointment.displayDate} at ${appointment.displayTime}.`,
           `Format: ${appointment.format}`,
           `Confirmation code: ${appointment.confirmationCode}`,
-          "If you need to cancel, use the cancellation form with your email address and confirmation code.",
+          "If you need to cancel, use the cancellation form with your name, email address, and appointment date.",
         ].join("\n");
 
   if (!process.env.SMTP_HOST) {
@@ -388,27 +388,49 @@ app.post("/api/appointments", (req, res) => {
 });
 
 app.post("/api/appointments/cancel", (req, res) => {
-  const { confirmationCode, email } = req.body;
+  const { fullName, email, appointmentDate, appointmentTime } = req.body;
 
-  if (!confirmationCode || !email) {
+  if (!fullName || !email || !appointmentDate) {
     return res.status(400).json({
       ok: false,
-      message: "confirmationCode and email are required",
+      message: "fullName, email, and appointmentDate are required",
     });
   }
 
   const store = readStore();
-  const appointment = store.appointments.find(
-    (entry) =>
-      entry.confirmationCode === String(confirmationCode).trim().toUpperCase() &&
-      entry.email === String(email).trim().toLowerCase() &&
-      entry.status !== "canceled"
-  );
+  const targetName = String(fullName).trim().toLowerCase();
+  const targetEmail = String(email).trim().toLowerCase();
+  const targetDate = String(appointmentDate).trim();
+  const targetTime = String(appointmentTime || "").trim().toLowerCase();
+
+  const matches = store.appointments.filter((entry) => {
+    if (entry.status === "canceled") {
+      return false;
+    }
+
+    const nameMatches = String(entry.name || "").trim().toLowerCase() === targetName;
+    const emailMatches = String(entry.email || "").trim().toLowerCase() === targetEmail;
+    const dateMatches = String(entry.date || "").trim() === targetDate;
+
+    if (!nameMatches || !emailMatches || !dateMatches) {
+      return false;
+    }
+
+    if (!targetTime) {
+      return true;
+    }
+
+    const rawTime = String(entry.time || "").trim().toLowerCase();
+    const displayTime = String(entry.displayTime || "").trim().toLowerCase();
+    return rawTime === targetTime || displayTime === targetTime;
+  });
+
+  const appointment = matches.at(0);
 
   if (!appointment) {
     return res.status(404).json({
       ok: false,
-      message: "No active appointment matched that email and confirmation code.",
+      message: "No active appointment matched those cancellation details.",
     });
   }
 

@@ -11,7 +11,7 @@
     <meta property="og:title" content="Cancel Appointment | CareConnect GP Practice" />
     <meta
       property="og:description"
-      content="Use your confirmation code to cancel an appointment or contact the practice for urgent appointment changes."
+      content="Use your appointment details to cancel an appointment or contact the practice for urgent appointment changes."
     />
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary_large_image" />
@@ -28,9 +28,9 @@
   <body>
     <header class="site-header">
       <div class="container nav-shell">
-        <a href="index.html" class="brand" aria-label="CareConnect home">
+        <a href="index.html" class="brand" aria-label="CareConnect GP Practice home">
           <span class="brand-mark">C+</span>
-          <span>CareConnect</span>
+          <span>CareConnect GP Practice</span>
         </a>
         <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav">Menu</button>
         <nav class="site-nav" id="site-nav" aria-label="Main navigation">
@@ -49,28 +49,50 @@
         <div class="container reveal">
           <div class="cancel-shell">
             <div>
-              <p class="eyebrow">Need To Change Plans?</p>
+              <p class="eyebrow">Need to change your GP appointment?</p>
               <h1 class="section-title">Cancelling or changing an appointment</h1>
               <p class="section-copy">To cancel your appointment, use your booking details below or contact us directly using one of these options:</p>
               <ul class="flow-list compact-list">
-                <li><span>1.</span> Use your NHS account (through the NHS website or NHS App)</li>
+                <li><span>1.</span> Use your NHS account (through the <a href="https://www.nhs.uk" target="_blank" rel="noopener noreferrer">NHS website (www.nhs.uk)</a> or <a href="https://www.nhs.uk/nhs-app/" target="_blank" rel="noopener noreferrer">NHS App</a>)</li>
                 <li><span>2.</span> Use the GP online system (SystmOnline)</li>
-                <li><span>3.</span> Phone us during opening times:<br />Cromwell Medical Centre: 01992 624732<br />Wormley Medical Centre: 01992 440877</li>
-                <li><span>4.</span> If your appointment is within the next 24 hours, call reception on Cromwell Medical Centre 01992 624732 or Wormley Medical Centre 01992 440877, or use the GP online system</li>
+                <li><span>3.</span> Phone us during opening times:<br />Riverside Family GP Practice: 01632 960245<br />Oakfield Community GP Practice: 01632 960876</li>
+                <li><span>4.</span> If your appointment is within the next 24 hours, call reception on Riverside Family GP Practice 01632 960245 or Oakfield Community GP Practice 01632 960876, or use the GP online system</li>
               </ul>
-              <p class="helper-text">Alias contact number: +92-300-0000000 | Alias email: appointments@careconnect.example.com</p>
-              <p class="helper-text">Use the same email and confirmation code from your booking email. Once canceled, the slot is immediately released for other patients.</p>
             </div>
 
             <form class="cancel-form cancel-form-bottom" id="cancel-form" novalidate>
               <div class="cancel-grid">
                 <label>
+                  Full name
+                  <input type="text" name="fullName" required />
+                </label>
+                <label>
+                  Phone number
+                  <input type="tel" name="phone" required />
+                </label>
+                <label>
+                  Appointment date
+                  <input type="date" name="appointmentDate" required />
+                </label>
+                <label>
+                  Appointment time (if known)
+                  <input type="text" name="appointmentTime" placeholder="e.g., 10:30 AM" />
+                </label>
+                <label>
+                  GP practice location
+                  <select name="practiceLocation" required>
+                    <option value="">Select one</option>
+                    <option>Riverside Family GP Practice</option>
+                    <option>Oakfield Community GP Practice</option>
+                  </select>
+                </label>
+                <label>
                   Email
                   <input type="email" name="email" required />
                 </label>
                 <label>
-                  Confirmation code
-                  <input type="text" name="confirmationCode" required />
+                  Reason for cancelling or changing
+                  <textarea name="changeReason" rows="3" required></textarea>
                 </label>
               </div>
               <button class="btn btn-ghost" type="submit">Cancel appointment</button>

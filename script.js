@@ -519,14 +519,25 @@ if (cancelForm) {
   cancelForm.addEventListener("submit", async (event) => {
     event.preventDefault();
 
+    if (!cancelForm.checkValidity()) {
+      cancelForm.reportValidity();
+      setStatus(cancelFeedback, "Please complete all required cancellation details.", "error");
+      return;
+    }
+
     const formData = new FormData(cancelForm);
     const payload = {
+      fullName: String(formData.get("fullName") || "").trim(),
+      phone: String(formData.get("phone") || "").trim(),
+      appointmentDate: String(formData.get("appointmentDate") || "").trim(),
+      appointmentTime: String(formData.get("appointmentTime") || "").trim(),
+      practiceLocation: String(formData.get("practiceLocation") || "").trim(),
+      changeReason: String(formData.get("changeReason") || "").trim(),
       email: String(formData.get("email") || "").trim(),
-      confirmationCode: String(formData.get("confirmationCode") || "").trim().toUpperCase(),
     };
 
-    if (!payload.email || !payload.confirmationCode) {
-      setStatus(cancelFeedback, "Email and confirmation code are required.", "error");
+    if (!payload.fullName || !payload.email || !payload.appointmentDate) {
+      setStatus(cancelFeedback, "Full name, email, and appointment date are required.", "error");
       return;
     }
 
