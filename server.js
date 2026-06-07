@@ -25,6 +25,7 @@ const DISPLAY_TIME_FORMATTER = new Intl.DateTimeFormat("en-US", {
   hour: "numeric",
   minute: "2-digit",
 });
+let cachedMailTransportPromise;
 
 app.use(express.json());
 app.use(express.static(__dirname));
@@ -198,8 +199,56 @@ function createConfirmationCode() {
   return `CC-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`.toUpperCase();
 }
 
+function buildSmtpTransport() {
+  return nodemailer.createTransport({
+    host: process.env.SMTP_HOST,
+    port: Number(process.env.SMTP_PORT || 587),
+    secure: process.env.SMTP_SECURE === "true",
+    auth: process.env.SMTP_USER
+      ? {
+          user: process.env.SMTP_USER,
+          pass: process.env.SMTP_PASS,
+        }
+      : undefined,
+  });
+}
+
+async function getMailTransport() {
+  if (process.env.SMTP_HOST) {
+    return {
+      mode: "smtp",
+      from: process.env.MAIL_FROM || "careconnect@example.com",
+      transport: buildSmtpTransport(),
+      host: process.env.SMTP_HOST,
+      port: Number(process.env.SMTP_PORT || 587),
+      secure: process.env.SMTP_SECURE === "true",
+    };
+  }
+
+  if (!cachedMailTransportPromise) {
+    cachedMailTransportPromise = nodemailer.createTestAccount().then((account) => ({
+      mode: "test",
+      from: process.env.MAIL_FROM || "careconnect@example.com",
+      host: "smtp.ethereal.email",
+      port: 587,
+      secure: false,
+      transport: nodemailer.createTransport({
+        host: "smtp.ethereal.email",
+        port: 587,
+        secure: false,
+        auth: {
+          user: account.user,
+          pass: account.pass,
+        },
+      }),
+    }));
+  }
+
+  return cachedMailTransportPromise;
+}
+
 async function sendConfirmationEmail(appointment, mode) {
-  const from = process.env.MAIL_FROM || "careconnect@example.com";
+  const mailTransport = await getMailTransport();
   const subject =
     mode === "canceled"
       ? `Appointment canceled: ${appointment.displayDate} at ${appointment.displayTime}`
@@ -222,31 +271,19 @@ async function sendConfirmationEmail(appointment, mode) {
           "If you need to cancel, use the cancellation form with your name, email address, and appointment date.",
         ].join("\n");
 
-  if (!process.env.SMTP_HOST) {
-    console.log(`[email simulation] To: ${appointment.email}\nSubject: ${subject}\n\n${text}`);
-    return { delivered: false, simulated: true };
-  }
-
-  const transport = nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: Number(process.env.SMTP_PORT || 587),
-    secure: process.env.SMTP_SECURE === "true",
-    auth: process.env.SMTP_USER
-      ? {
-          user: process.env.SMTP_USER,
-          pass: process.env.SMTP_PASS,
-        }
-      : undefined,
-  });
-
-  await transport.sendMail({
-    from,
+  const info = await mailTransport.transport.sendMail({
+    from: mailTransport.from,
     to: appointment.email,
     subject,
     text,
   });
 
-  return { delivered: true, simulated: false };
+  return {
+    delivered: true,
+    simulated: false,
+    mode: mailTransport.mode,
+    previewUrl: mailTransport.mode === "test" ? nodemailer.getTestMessageUrl(info) : null,
+  };
 }
 
 app.get("/api/health", (_req, res) => {
@@ -260,7 +297,9 @@ app.get("/api/admin/settings", (_req, res) => {
     settings,
     email: {
       smtpConfigured: Boolean(process.env.SMTP_HOST),
-      host: process.env.SMTP_HOST || "",
+      testMailboxEnabled: !process.env.SMTP_HOST,
+      mode: process.env.SMTP_HOST ? "smtp" : "test",
+      host: process.env.SMTP_HOST || "smtp.ethereal.email",
       port: Number(process.env.SMTP_PORT || 587),
       secure: process.env.SMTP_SECURE === "true",
       userConfigured: Boolean(process.env.SMTP_USER),

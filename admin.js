@@ -29,7 +29,7 @@ function updateSmtpStatus(email) {
   if (email.smtpConfigured) {
     smtpStatus.textContent = `SMTP configured: ${email.host || "host"}:${email.port} (${email.secure ? "secure" : "starttls"}). Mail from: ${email.from}.`;
   } else {
-    smtpStatus.textContent = "SMTP not configured. Email delivery is currently running in simulation mode.";
+    smtpStatus.textContent = "SMTP not configured. Email delivery is using the automatic test mailbox service.";
   }
 }
 

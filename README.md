@@ -21,7 +21,7 @@ Booking rules are configurable from both:
 - Each slot is capped and automatically locks when capacity is reached.
 - Confirmed bookings receive a confirmation code.
 - Canceling an appointment releases that slot back into availability.
-- Confirmation emails are sent when SMTP is configured, otherwise the app logs a simulated email in the server console.
+- Confirmation emails are sent when SMTP is configured. Without SMTP credentials, the app automatically uses a test mailbox service for development.
 
 ## Run Locally
 
@@ -42,4 +42,4 @@ Set these environment variables to enable real confirmation emails:
 
 You can place these in a `.env` file (see `.env.example`) and restart the server.
 
-Without those variables, booking and cancellation still work and email messages are simulated in the server output.
+Without those variables, booking and cancellation still work and email messages are generated through the automatic test mailbox service.

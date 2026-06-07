@@ -375,7 +375,7 @@ if (form && feedback) {
           patientType.value = "New";
           toggleNewPatientFields();
         }
-        actionHelper.textContent = "New client mode enabled: please complete all patient registration details.";
+        actionHelper.textContent = "New patient mode enabled: please complete all patient registration details.";
         return;
       }
 
@@ -490,9 +490,12 @@ if (form && feedback) {
       }
 
       const appointment = result.appointment || {};
-      const emailNote = result.emailStatus && result.emailStatus.delivered
-        ? "A confirmation email has been sent."
-        : "Email delivery is in simulation mode unless SMTP is configured on the server.";
+      let emailNote = "Confirmation email status is unavailable.";
+      if (result.emailStatus && result.emailStatus.delivered) {
+        emailNote = result.emailStatus.mode === "test"
+          ? "A confirmation email has been generated using the server test mailbox."
+          : "A confirmation email has been sent."
+      }
 
       setStatus(
         feedback,
