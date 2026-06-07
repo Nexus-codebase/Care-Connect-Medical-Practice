@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Settings | CareConnect GP Practice</title>
+    <meta name="description" content="Configure booking rules and review SMTP email delivery status for CareConnect GP Practice." />
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <link rel="manifest" href="site.webmanifest" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Source+Serif+4:wght@500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container nav-shell">
+        <a href="index.html" class="brand" aria-label="CareConnect home">
+          <span class="brand-mark">C+</span>
+          <span>CareConnect</span>
+        </a>
+        <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav">Menu</button>
+        <nav class="site-nav" id="site-nav" aria-label="Main navigation">
+          <a href="index.html">Home</a>
+          <a href="about.html">About</a>
+          <a href="services.html">Services</a>
+          <a href="booking.html">Appointment</a>
+          <a href="contact.html">Contact</a>
+          <a href="admin.html" aria-current="page">Admin</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="section">
+        <div class="container reveal">
+          <p class="eyebrow">Admin</p>
+          <h1 class="section-title">Booking and email settings</h1>
+          <p class="section-copy">Configure booking rules from the UI and confirm whether SMTP email delivery is enabled.</p>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="container admin-shell reveal">
+          <form class="admin-form" id="admin-settings-form" novalidate>
+            <h2>Booking rules</h2>
+
+            <label>
+              Slot capacity (bookings per time slot)
+              <input type="number" id="slot-capacity" min="1" max="20" required />
+            </label>
+
+            <label>
+              Booking window (days)
+              <input type="number" id="booking-window" min="1" max="90" required />
+            </label>
+
+            <label>
+              Slot times (24-hour, comma-separated)
+              <input type="text" id="slot-times" placeholder="09:00, 10:30, 12:00" required />
+            </label>
+
+            <button class="btn btn-primary" type="submit">Save booking settings</button>
+            <p class="form-feedback" id="admin-feedback" role="status" aria-live="polite"></p>
+          </form>
+
+          <aside class="booking-status-panel">
+            <h2>Email delivery</h2>
+            <p class="helper-text" id="smtp-status">Checking SMTP configuration...</p>
+            <ul class="flow-list compact-list">
+              <li><span>1.</span> Set `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`</li>
+              <li><span>2.</span> Set `SMTP_USER` and `SMTP_PASS`</li>
+              <li><span>3.</span> Optionally set `MAIL_FROM`</li>
+            </ul>
+            <p class="helper-text">Use `.env` (see `.env.example`) or OS environment variables, then restart the server.</p>
+          </aside>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer" id="contact">
+      <div class="container footer-grid">
+        <p><strong>Contact:</strong> +92-300-0000000</p>
+        <p><strong>Email:</strong> careconnect@example.com</p>
+        <p><strong>Location:</strong> Street 6, Near Hospital</p>
+        <p><strong>Timing:</strong> Mon to Thur, 9:00 AM - 6:00 PM</p>
+      </div>
+      <p class="copyright"><span id="year"></span> CareConnect. All rights reserved.</p>
+    </footer>
+
+    <script src="script.js"></script>
+    <script src="admin.js"></script>
+  </body>
+</html>

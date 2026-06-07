@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Book Appointment | CareConnect GP Practice</title>
+    <meta
+      name="description"
+      content="Book and confirm GP appointments with live dates, capped time slots, and cancellation support at CareConnect GP Practice."
+    />
+    <meta property="og:title" content="Book Appointment | CareConnect GP Practice" />
+    <meta
+      property="og:description"
+      content="Choose a live GP appointment slot, confirm instantly, and manage cancellations from one booking page."
+    />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <link rel="manifest" href="site.webmanifest" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Source+Serif+4:wght@500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="ambient-glow ambient-glow-top" aria-hidden="true"></div>
+    <div class="ambient-glow ambient-glow-bottom" aria-hidden="true"></div>
+
+    <header class="site-header">
+      <div class="container nav-shell">
+        <a href="index.html" class="brand" aria-label="CareConnect home">
+          <span class="brand-mark">C+</span>
+          <span>CareConnect</span>
+        </a>
+        <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav">Menu</button>
+        <nav class="site-nav" id="site-nav" aria-label="Main navigation">
+          <a href="index.html">Home</a>
+          <a href="about.html">About</a>
+          <a href="services.html">Services</a>
+          <a href="prescriptions.html">Prescriptions</a>
+          <a href="booking.html" aria-current="page">Appointment</a>
+          <a href="contact.html">Contact</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="section">
+        <div class="container reveal">
+          <p class="eyebrow">Appointment Booking</p>
+          <h1 class="section-title">Book and confirm your GP appointment</h1>
+          <p class="section-copy">
+            Choose from live available GP appointment slots, lock your booking
+            instantly, and receive a confirmation email with your date, time,
+            and cancellation code.
+          </p>
+          <figure class="feature-visual page-banner-visual">
+            <img src="images/booking-illustration.svg" alt="Illustration of booking and confirming a GP appointment online" />
+          </figure>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="container appointment-shell reveal">
+          <div>
+            <article class="booking-status-panel new-client-panel">
+              <p class="eyebrow">Now Open</p>
+              <h3>Accepting new clients</h3>
+              <p class="helper-text">Allow new clients to register and book appointments online through the same GP workflow.</p>
+              <ul class="flow-list compact-list">
+                <li><span>1.</span> Choose <strong>Register as New Patient</strong> at the first step</li>
+                <li><span>2.</span> Complete new patient details and preferred GP slot</li>
+                <li><span>3.</span> Receive email confirmation and unique booking code</li>
+              </ul>
+            </article>
+
+            <div class="booking-status-panel">
+              <h3>Live GP availability</h3>
+              <p id="availability-summary">Loading the next open slot...</p>
+              <p class="helper-text">Each appointment slot is capped. Full slots are locked until a cancellation releases capacity.</p>
+            </div>
+          </div>
+
+          <form class="appointment-form" id="appointment-form" novalidate>
+            <p class="booking-note field-span">Professional GP intake form: complete each step to confirm the appointment securely.</p>
+            <p class="step-indicator field-span" id="step-indicator">Step 1 of 9</p>
+
+            <fieldset class="wizard-step field-span" data-step="1">
+              <legend>Decision: what do you want to do?</legend>
+              <label>
+                Action
+                <select name="action" id="action" required>
+                  <option value="">Select one</option>
+                  <option value="Book Appointment">Book Appointment</option>
+                  <option value="Request Prescription Refill">Request Prescription Refill</option>
+                  <option value="View Test Results">View Test Results</option>
+                  <option value="Contact a Doctor">Contact a Doctor</option>
+                  <option value="Register as New Patient">Register as New Patient</option>
+                </select>
+              </label>
+              <p class="helper-text" id="action-helper"></p>
+            </fieldset>
+
+            <fieldset class="wizard-step field-span" data-step="2" hidden>
+              <legend>Step 1: select appointment type</legend>
+              <label>
+                Appointment type
+                <select name="type" required>
+                  <option value="">Select one</option>
+                  <option>General Consultation</option>
+                  <option>Follow-up Visit</option>
+                  <option>Chronic Care Review</option>
+                  <option>Vaccination</option>
+                  <option>Blood Test</option>
+                  <option>Mental Health Consultation</option>
+                </select>
+              </label>
+              <label class="check-row">
+                <input type="checkbox" name="helpChoose" />
+                <span>I am unsure, show Help me choose assistance</span>
+              </label>
+            </fieldset>
+
+            <fieldset class="wizard-step field-span" data-step="3" hidden>
+              <legend>Step 2: select practitioner</legend>
+              <label>
+                Preferred practitioner
+                <select name="practitioner" required>
+                  <option value="">Select one</option>
+                  <option>GP</option>
+                  <option>Nurse</option>
+                  <option>Specialist</option>
+                  <option>No preference (auto-assign)</option>
+                </select>
+              </label>
+            </fieldset>
+
+            <fieldset class="wizard-step field-span" data-step="4" hidden>
+              <legend>Step 3: choose appointment format</legend>
+              <label>
+                Format
+                <select name="format" id="format" required>
+                  <option value="">Select one</option>
+                  <option>In-clinic</option>
+                  <option>Video consultation</option>
+                  <option>Telephone consultation</option>
+                </select>
+              </label>
+              <label class="check-row">
+                <input type="checkbox" name="telehealthOk" id="telehealth-ok" checked />
+                <span>Telehealth is acceptable</span>
+              </label>
+            </fieldset>
+
+            <fieldset class="wizard-step field-span" data-step="5" hidden>
+              <legend>Step 4: select date and time</legend>
+              <label>
+                Available date
+                <select name="date" id="slot-date" required>
+                  <option value="">Loading available dates...</option>
+                </select>
+              </label>
+              <label>
+                Available time
+                <select name="time" id="slot-time" required>
+                  <option value="">Choose a date first</option>
+                </select>
+              </label>
+              <p class="helper-text" id="slot-helper">Slots are loading from the server.</p>
+            </fieldset>
+
+            <fieldset class="wizard-step field-span" data-step="6" hidden>
+              <legend>Step 5: patient details</legend>
+              <label>
+                Patient type
+                <select name="patientType" id="patient-type" required>
+                  <option value="">Select one</option>
+                  <option value="Existing">Existing patient</option>
+                  <option value="New">New patient</option>
+                </select>
+              </label>
+              <label>
+                Full name
+                <input type="text" name="name" required />
+              </label>
+              <label>
+                Email
+                <input type="email" name="email" required />
+              </label>
+              <label>
+                Contact number
+                <input type="tel" name="phone" required />
+              </label>
+              <label class="new-only" hidden>
+                Date of birth
+                <input type="date" name="dob" />
+              </label>
+              <label class="new-only" hidden>
+                Address
+                <input type="text" name="address" />
+              </label>
+              <label class="new-only" hidden>
+                Health ID number (optional)
+                <input type="text" name="nhsNumber" />
+              </label>
+            </fieldset>
+
+            <fieldset class="wizard-step field-span" data-step="7" hidden>
+              <legend>Step 6: reason for visit</legend>
+              <label>
+                Symptoms / reason
+                <textarea name="notes" rows="4" required></textarea>
+              </label>
+              <label>
+                Duration
+                <input type="text" name="duration" placeholder="e.g., 3 days" required />
+              </label>
+              <label>
+                Optional photo upload
+                <input type="file" name="photo" accept="image/*" />
+              </label>
+            </fieldset>
+
+            <fieldset class="wizard-step field-span" data-step="8" hidden>
+              <legend>Step 7: insurance and payment</legend>
+              <label>
+                Patient coverage
+                <select name="coverage" id="coverage" required>
+                  <option value="">Select one</option>
+                  <option value="Standard">Standard patient</option>
+                  <option value="Private">Private patient</option>
+                </select>
+              </label>
+              <label id="private-payment" hidden>
+                Payment method
+                <select name="paymentMethod">
+                  <option value="">Select one</option>
+                  <option>Insurance</option>
+                  <option>Self-pay</option>
+                </select>
+              </label>
+            </fieldset>
+
+            <fieldset class="wizard-step field-span" data-step="9" hidden>
+              <legend>Step 8: review and confirm</legend>
+              <div class="review-box" id="review-box"></div>
+              <button class="btn btn-primary" type="submit">Confirm appointment</button>
+            </fieldset>
+
+            <div class="wizard-controls field-span">
+              <button class="btn btn-ghost" type="button" id="prev-step" disabled>Back</button>
+              <button class="btn btn-primary" type="button" id="next-step">Next</button>
+            </div>
+
+            <p class="form-feedback field-span" id="form-feedback" role="status" aria-live="polite"></p>
+          </form>
+        </div>
+      </section>
+
+      <section class="section cancel-section">
+        <div class="container reveal">
+          <div class="cancel-shell">
+            <div>
+              <p class="eyebrow">Need To Change Plans?</p>
+              <h2 class="section-title">Cancelling or changing an appointment</h2>
+              <p class="section-copy">Use the dedicated cancellation page for full instructions, contact routes, and secure cancellation by email and confirmation code.</p>
+              <div class="hero-actions">
+                <a class="btn btn-ghost" href="cancel.html">Go to cancellation page</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer" id="contact">
+      <div class="container footer-grid">
+        <p><strong>Contact:</strong> +92-300-0000000</p>
+        <p><strong>Email:</strong> careconnect@example.com</p>
+        <p><strong>Location:</strong> Street 6, Near Hospital</p>
+        <p><strong>Timing:</strong> Mon to Thur, 9:00 AM - 6:00 PM</p>
+      </div>
+      <p class="copyright"><span id="year"></span> CareConnect. All rights reserved.</p>
+    </footer>
+
+    <script src="script.js"></script>
+  </body>
+</html>
