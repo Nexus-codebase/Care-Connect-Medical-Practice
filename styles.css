@@ -507,6 +507,66 @@ a {
   margin-bottom: 0.5rem;
 }
 
+.new-patients-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.new-patients-title::before {
+  content: "🆕";
+  line-height: 1;
+}
+
+.live-availability-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.live-availability-title::before {
+  content: "\1F5D3\FE0F";
+  line-height: 1;
+}
+
+.appointment-details-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.appointment-details-title::before {
+  content: "\23F1\FE0F";
+  line-height: 1;
+}
+
+.appointment-details-list {
+  margin-top: 0.6rem;
+}
+
+.appointment-details-list li {
+  line-height: 1.5;
+}
+
+.useful-info-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.useful-info-title::before {
+  content: "\2139\FE0F";
+  line-height: 1;
+}
+
+.useful-info-list {
+  margin-top: 0.6rem;
+}
+
+.useful-info-list li {
+  line-height: 1.5;
+}
+
 .cancel-form {
   display: grid;
   gap: 0.75rem;
@@ -574,6 +634,18 @@ a {
   font-weight: 500;
 }
 
+.booking-process-title {
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.booking-process-title::before {
+  content: "\1F4DD";
+  line-height: 1;
+}
+
 .appointment-form label {
   display: grid;
   gap: 0.35rem;
@@ -600,6 +672,84 @@ a {
 .step-indicator {
   font-weight: 700;
   color: var(--accent-strong);
+}
+
+.availability-mini-board {
+  grid-column: 1 / -1;
+  margin-top: 0.5rem;
+  background: #fbfdff;
+  border: 1px solid #d7e7f2;
+  border-radius: 0.6rem;
+  padding: 0.7rem 0.8rem;
+}
+
+.availability-board-heading {
+  margin: 0 0 0.65rem;
+  font-weight: 700;
+  color: var(--ink-950);
+  font-size: 0.95rem;
+}
+
+.availability-board-table {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.slot-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem;
+  border: 1px solid #e1e6ea;
+  border-radius: 999px;
+  background: #ffffff;
+  padding: 0.38rem 0.7rem;
+}
+
+.slot-row.available {
+  border-color: #7cb342;
+  background: #f7fcf1;
+}
+
+.slot-row.full {
+  border-color: #f0ad4e;
+  background: #fffaf1;
+}
+
+.slot-row.unavailable {
+  border-color: #b0b7bd;
+  background: #f7f8f9;
+}
+
+.slot-time {
+  font-weight: 700;
+  color: var(--ink-950);
+  min-width: 4.7rem;
+}
+
+.slot-pill {
+  display: inline-flex;
+  justify-content: center;
+  padding: 0.18rem 0.52rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--accent-strong);
+  background: rgba(0, 94, 184, 0.08);
+}
+
+.slot-row.full .slot-pill {
+  background: rgba(240, 173, 78, 0.18);
+}
+
+.slot-row.unavailable .slot-pill {
+  background: rgba(176, 183, 189, 0.22);
+}
+
+.slot-capacity {
+  margin-left: auto;
+  color: var(--ink-700);
+  font-size: 0.8rem;
 }
 
 .check-row {
@@ -762,6 +912,15 @@ a {
 
   .appointment-form {
     grid-template-columns: 1fr;
+  }
+
+  .slot-row {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
+
+  .slot-capacity {
+    margin-left: 0;
   }
 
   .cancel-grid {

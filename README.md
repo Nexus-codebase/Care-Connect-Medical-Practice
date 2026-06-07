@@ -1,37 +1,68 @@
-# Care-Connect-Medical-Practice
+# CareConnect GP Practice
 
-CareConnect Medical Practice Website
+CareConnect is a responsive GP practice website with a server-backed appointment flow, live slot availability, booking confirmation, cancellation handling, and basic admin controls.
 
-Type: Responsive business website for healthcare practice
+## Project Structure
 
-Technologies: HTML5, CSS3, JavaScript, Node.js, Express
+```text
+careconnect/
+├── about.html
+├── admin.html
+├── admin.js
+├── booking.html
+├── cancel.html
+├── care_connect_flow.js
+├── contact.html
+├── index.html
+├── prescriptions.html
+├── services.html
+├── script.js
+├── server.js
+├── styles.css
+├── README.md
+├── architecture.md
+├── package.json
+├── site.webmanifest
+├── favicon.svg
+├── data/
+│   ├── appointments.json
+│   ├── appointment_slots.json
+│   └── settings.json
+└── images/
+```
+
+### Key files
+
+- `index.html`: Home page with live appointment availability.
+- `booking.html`: Booking workflow and live slot selector.
+- `cancel.html`: Appointment cancellation page and call-reception guidance.
+- `admin.html` and `admin.js`: Admin settings and booking controls.
+- `server.js`: Express server, availability API, appointment storage, and email flow.
+- `script.js`: Shared frontend logic for booking, cancellation, and live updates.
+- `styles.css`: Shared site styling.
+- `data/appointments.json`: Stored appointments and cancellations.
+- `data/appointment_slots.json`: Generated live slot table used by the API.
+- `data/settings.json`: Slot capacity, booking window, and slot times.
 
 ## Booking System
 
-The appointment flow now uses live server-backed slot availability.
-
-The booking, confirmation, and cancellation workflow is served from the dedicated `booking.html` page.
-
-Booking rules are configurable from both:
-
-- Admin UI page: `admin.html`
-- Admin settings file: `data/settings.json`
+The appointment flow uses live server-backed slot availability.
 
 - Available dates and times are loaded from the server.
-- Each slot is capped and automatically locks when capacity is reached.
-- Confirmed bookings receive a confirmation code.
-- Canceling an appointment releases that slot back into availability.
-- Confirmation emails are sent when SMTP is configured. Without SMTP credentials, the app automatically uses a test mailbox service for development.
+- Each slot has a fixed capacity and locks when full.
+- Bookings receive a confirmation code.
+- Cancellations release the slot back into availability.
+- Confirmation emails are sent when SMTP is configured.
 
 ## Run Locally
 
 1. Install dependencies with `npm.cmd install` on Windows.
-2. Start the server with `node server.js`.
+2. Start the server with `node server.js` or `npm start`.
 3. Open `http://localhost:3000`.
 
-## Optional Email Configuration
+## Environment Variables
 
-Set these environment variables to enable real confirmation emails:
+Set these in a `.env` file to enable real email delivery:
 
 - `SMTP_HOST`
 - `SMTP_PORT`
@@ -40,6 +71,8 @@ Set these environment variables to enable real confirmation emails:
 - `SMTP_PASS`
 - `MAIL_FROM`
 
-You can place these in a `.env` file (see `.env.example`) and restart the server.
+Without those variables, booking and cancellation still work and email messages are generated through the test mailbox service.
 
-Without those variables, booking and cancellation still work and email messages are generated through the automatic test mailbox service.
+## Architecture
+
+See [architecture.md](architecture.md) for the system design, API endpoints, data model, and booking flow.

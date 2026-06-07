@@ -51,11 +51,9 @@
       <section class="section">
         <div class="container reveal">
           <p class="eyebrow">Appointment Booking</p>
-          <h1 class="section-title">Book and confirm your GP appointment</h1>
+          <h1 class="section-title">Book your GP appointments quickly and easily online</h1>
           <p class="section-copy">
-            Choose from live available GP appointment slots, lock your booking
-            instantly, and receive a confirmation email with your date, time,
-            and booking details.
+            Choose from live, up-to-date available appointment slots, secure your booking instantly, and receive an email confirmation containing your exact date, time, and full booking details.
           </p>
           <figure class="feature-visual page-banner-visual">
             <img src="images/booking-illustration.svg" alt="Illustration of booking and confirming a GP appointment online" />
@@ -68,40 +66,36 @@
           <div>
             <article class="booking-status-panel new-client-panel">
               <p class="eyebrow">Now open</p>
-              <h3>Accepting new patients</h3>
-              <p class="helper-text">New patients can register and book appointments online through the same GP workflow.</p>
+              <h3 class="new-patients-title">New Patients - How to Register &amp; Book</h3>
+              <p class="helper-text">If you are not yet registered with us, you can sign up and book your first appointment using the same simple online system:</p>
               <ul class="flow-list compact-list">
-                <li><span>1.</span> Choose <strong>Register as New Patient</strong> at the first step</li>
-                <li><span>2.</span> Complete new patient details and preferred GP slot</li>
-                <li><span>3.</span> Receive email confirmation and unique booking code</li>
+                <li><span>Step 1.</span> Select <strong>Register as New Patient</strong> when you start your booking</li>
+                <li><span>Step 2.</span> Fill in your details and choose your preferred appointment type, date and GP</li>
+                <li><span>Step 3.</span> Receive an email confirmation and your unique booking reference number straight away</li>
               </ul>
             </article>
 
-            <div class="booking-status-panel">
-              <h3>Live GP availability</h3>
-              <p id="availability-summary">Loading the next open slot...</p>
-              <p class="helper-text">Each appointment slot is capped. Full slots are locked until a cancellation releases capacity.</p>
-            </div>
           </div>
 
           <form class="appointment-form" id="appointment-form" novalidate>
-            <p class="booking-note field-span">Professional GP intake form: complete each step to confirm the appointment securely.</p>
+            <h3 class="booking-process-title field-span">Simple, Secure Step-by-Step Booking</h3>
+            <p class="booking-note field-span">Complete our short, secure form to confirm your appointment - we'll guide you clearly through every stage.</p>
             <p class="step-indicator field-span" id="step-indicator">Step 1 of 9</p>
 
             <fieldset class="wizard-step field-span" data-step="1">
-              <legend>Decision: what do you want to do?</legend>
+              <legend>Step 1 - What would you like to do?</legend>
               <label>
                 Action
                 <select name="action" id="action" required>
                   <option value="">Select one</option>
-                  <option value="Book Appointment">Book Appointment</option>
-                  <option value="Request Prescription Refill">Request Prescription Refill</option>
-                  <option value="View Test Results">View Test Results</option>
-                  <option value="Contact a Doctor">Contact a GP</option>
-                  <option value="Register as New Patient">Register as New Patient</option>
+                  <option>Routine GP consultation</option>
+                  <option>Urgent same-day appointment</option>
+                  <option>Follow-up review</option>
+                  <option>Medication or test results discussion</option>
+                  <option>Nurse appointment / health check</option>
                 </select>
               </label>
-              <p class="helper-text" id="action-helper"></p>
+              <p class="helper-text" id="action-helper">Choose what kind of appointment you need.</p>
             </fieldset>
 
             <fieldset class="wizard-step field-span" data-step="2" hidden>
@@ -170,6 +164,7 @@
                 </select>
               </label>
               <p class="helper-text" id="slot-helper">Slots are loading from the server.</p>
+              <div class="availability-mini-board" id="availability-board" aria-live="polite"></div>
             </fieldset>
 
             <fieldset class="wizard-step field-span" data-step="6" hidden>

@@ -7,8 +7,11 @@ require("dotenv").config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 const DATA_FILE = path.join(__dirname, "data", "appointments.json");
+const SLOT_FILE = path.join(__dirname, "data", "appointment_slots.json");
 const SETTINGS_FILE = path.join(__dirname, "data", "settings.json");
 const DEFAULT_SLOT_TIMES = ["09:00", "10:30", "12:00", "14:00", "15:30", "17:00"];
+const DEFAULT_SLOT_MINUTES = 15;
+const RECEPTION_MESSAGE = "Please call reception: Cromwell Medical Centre 01992 624732 or Wormley Medical Centre 01992 440877.";
 const DEFAULT_SETTINGS = {
   slotCapacity: Number(process.env.SLOT_CAPACITY || 2),
   bookingWindowDays: Number(process.env.BOOKING_WINDOW_DAYS || 14),
@@ -61,8 +64,28 @@ function writeStore(store) {
   fs.writeFileSync(DATA_FILE, `${JSON.stringify(store, null, 2)}\n`, "utf8");
 }
 
+function writeSlotStore(slots) {
+  fs.writeFileSync(SLOT_FILE, `${JSON.stringify(slots, null, 2)}\n`, "utf8");
+}
+
 function isValidTimeValue(time) {
   return /^([01]\d|2[0-3]):([0-5]\d)$/.test(String(time || ""));
+}
+
+function parseTimeValue(time) {
+  const [hours, minutes] = String(time || "").split(":").map(Number);
+  return (hours * 60) + minutes;
+}
+
+function addMinutesToTime(time, minutesToAdd) {
+  const totalMinutes = parseTimeValue(time) + minutesToAdd;
+  const hours = Math.floor(totalMinutes / 60) % 24;
+  const minutes = totalMinutes % 60;
+  return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
+}
+
+function buildSlotId(date, startTime, practitionerId = "") {
+  return `${date}|${startTime}|${practitionerId || "general"}`;
 }
 
 function normalizeSettings(input) {
@@ -127,6 +150,172 @@ function readSettings() {
 
 function writeSettings(settings) {
   fs.writeFileSync(SETTINGS_FILE, `${JSON.stringify(settings, null, 2)}\n`, "utf8");
+  writeSlotStore(generateAppointmentSlots(settings));
+}
+
+function generateAppointmentSlots(settings) {
+  const slots = [];
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  for (let offset = 0; offset < settings.bookingWindowDays; offset += 1) {
+    const currentDate = new Date(today);
+    currentDate.setDate(today.getDate() + offset);
+    const dateValue = toIsoDate(currentDate);
+
+    settings.slotTimes.forEach((startTime) => {
+      slots.push({
+        slot_id: buildSlotId(dateValue, startTime),
+        date: dateValue,
+        start_time: startTime,
+        end_time: addMinutesToTime(startTime, DEFAULT_SLOT_MINUTES),
+        capacity: settings.slotCapacity,
+        practitioner_id: null,
+        appointment_type: null,
+      });
+    });
+  }
+
+  return slots;
+}
+
+function readSlotStore(settings) {
+  const generatedSlots = generateAppointmentSlots(settings);
+
+  if (!fs.existsSync(SLOT_FILE)) {
+    writeSlotStore(generatedSlots);
+    return generatedSlots;
+  }
+
+  try {
+    const raw = fs.readFileSync(SLOT_FILE, "utf8");
+    if (!raw.trim()) {
+      writeSlotStore(generatedSlots);
+      return generatedSlots;
+    }
+
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed) && parsed.length) {
+      return parsed;
+    }
+  } catch {
+    // Fall back to a fresh generated table.
+  }
+
+  writeSlotStore(generatedSlots);
+  return generatedSlots;
+}
+
+function getActiveAppointmentCounts(appointments) {
+  const counts = new Map();
+
+  appointments
+    .filter((appointment) => String(appointment.status || "").toLowerCase() !== "canceled"
+      && String(appointment.status || "").toLowerCase() !== "cancelled")
+    .forEach((appointment) => {
+      const slotId = appointment.slot_id
+        || buildSlotId(appointment.date, appointment.time, appointment.practitioner_id || "");
+      counts.set(slotId, (counts.get(slotId) || 0) + 1);
+    });
+
+  return counts;
+}
+
+function parseAppointmentDateTime(date, time) {
+  if (!date || !time) {
+    return null;
+  }
+
+  const candidate = new Date(`${date}T${time}:00`);
+  return Number.isNaN(candidate.getTime()) ? null : candidate;
+}
+
+function isPastSlot(date, startTime) {
+  const slotDateTime = parseAppointmentDateTime(date, startTime);
+  if (!slotDateTime) {
+    return false;
+  }
+
+  return slotDateTime.getTime() < Date.now();
+}
+
+function decorateSlot(slot, bookedCount) {
+  const capacity = Number(slot.capacity || 0);
+  const remaining = Math.max(capacity - bookedCount, 0);
+  const past = isPastSlot(slot.date, slot.start_time);
+  const available = !past && remaining > 0;
+  const full = !past && remaining <= 0;
+  const status = past ? "unavailable" : available ? "available" : "full";
+
+  return {
+    slot_id: slot.slot_id,
+    date: slot.date,
+    start_time: slot.start_time,
+    end_time: slot.end_time,
+    time: slot.start_time,
+    label: toDisplayTime(slot.start_time),
+    capacity,
+    booked: bookedCount,
+    remaining,
+    available,
+    full,
+    unavailable: past,
+    status,
+    practitioner_id: slot.practitioner_id || null,
+    appointment_type: slot.appointment_type || null,
+  };
+}
+
+function buildSlots(appointments, settings) {
+  const slotRows = readSlotStore(settings);
+  const activeCounts = getActiveAppointmentCounts(appointments);
+  const grouped = new Map();
+
+  slotRows.forEach((slot) => {
+    const bookedCount = activeCounts.get(slot.slot_id) || 0;
+    const decorated = decorateSlot(slot, bookedCount);
+    const displayDate = DISPLAY_DATE_FORMATTER.format(new Date(`${slot.date}T00:00:00`));
+
+    if (!grouped.has(slot.date)) {
+      grouped.set(slot.date, {
+        date: slot.date,
+        displayDate,
+        slots: [],
+      });
+    }
+
+    grouped.get(slot.date).slots.push(decorated);
+  });
+
+  return Array.from(grouped.values());
+}
+
+function getAvailabilityPayload(appointments, settings, requestedDate = "") {
+  const dates = buildSlots(appointments, settings);
+  const requestedDay = requestedDate ? dates.find((day) => day.date === requestedDate) : null;
+  const slots = requestedDay ? requestedDay.slots : (dates[0] ? dates[0].slots : []);
+
+  const nextAvailable = dates
+    .flatMap((day) =>
+      day.slots
+        .filter((slot) => slot.available)
+        .map((slot) => ({
+          date: day.date,
+          displayDate: day.displayDate,
+          time: slot.time,
+          displayTime: slot.label,
+          remaining: slot.remaining,
+        }))
+    )
+    .at(0) || null;
+
+  return {
+    slotCapacity: settings.slotCapacity,
+    bookingWindowDays: settings.bookingWindowDays,
+    nextAvailable,
+    dates,
+    slots,
+  };
 }
 
 function toIsoDate(date) {
@@ -142,49 +331,7 @@ function toDisplayTime(time) {
   return DISPLAY_TIME_FORMATTER.format(sample);
 }
 
-function buildSlots(appointments, settings) {
-  const activeCounts = new Map();
-
-  appointments
-    .filter((appointment) => appointment.status !== "canceled")
-    .forEach((appointment) => {
-      const key = `${appointment.date}|${appointment.time}`;
-      activeCounts.set(key, (activeCounts.get(key) || 0) + 1);
-    });
-
-  const dates = [];
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  for (let offset = 0; offset < settings.bookingWindowDays; offset += 1) {
-    const currentDate = new Date(today);
-    currentDate.setDate(today.getDate() + offset);
-
-    const dateValue = toIsoDate(currentDate);
-    const slots = settings.slotTimes.map((time) => {
-      const key = `${dateValue}|${time}`;
-      const booked = activeCounts.get(key) || 0;
-      const remaining = Math.max(settings.slotCapacity - booked, 0);
-
-      return {
-        time,
-        label: toDisplayTime(time),
-        remaining,
-        available: remaining > 0,
-      };
-    });
-
-    dates.push({
-      date: dateValue,
-      displayDate: DISPLAY_DATE_FORMATTER.format(currentDate),
-      slots,
-    });
-  }
-
-  return dates;
-}
-
-function findSlotAvailability(appointments, date, time) {
+function findSlotAvailability(appointments, date, time, practitionerId = "") {
   const settings = readSettings();
   const dates = buildSlots(appointments, settings);
   const day = dates.find((slotDate) => slotDate.date === date);
@@ -192,7 +339,19 @@ function findSlotAvailability(appointments, date, time) {
     return null;
   }
 
-  return day.slots.find((slot) => slot.time === time) || null;
+  const slotMatch = day.slots.find((slot) => {
+    if (slot.time !== time) {
+      return false;
+    }
+
+    if (!practitionerId) {
+      return true;
+    }
+
+    return String(slot.practitioner_id || "") === String(practitionerId);
+  });
+
+  return slotMatch || null;
 }
 
 function createConfirmationCode() {
@@ -329,35 +488,30 @@ app.put("/api/admin/settings", (req, res) => {
   return res.json({ ok: true, message: "Booking settings updated.", settings: normalized.settings });
 });
 
-app.get("/api/availability", (_req, res) => {
+app.get("/api/availability", (req, res) => {
+  const requestedDate = String(req.query.date || "").trim();
+  if (requestedDate && !/^\d{4}-\d{2}-\d{2}$/.test(requestedDate)) {
+    return res.status(400).json({ ok: false, message: "date must use YYYY-MM-DD format." });
+  }
+
   const store = readStore();
   const settings = readSettings();
-  const dates = buildSlots(store.appointments, settings);
-  const nextAvailable = dates
-    .flatMap((slotDate) =>
-      slotDate.slots
-        .filter((slot) => slot.available)
-        .map((slot) => ({
-          date: slotDate.date,
-          displayDate: slotDate.displayDate,
-          time: slot.time,
-          displayTime: slot.label,
-          remaining: slot.remaining,
-        }))
-    )
-    .at(0);
+  const payload = getAvailabilityPayload(store.appointments, settings, requestedDate);
 
   res.json({
     ok: true,
-    slotCapacity: settings.slotCapacity,
-    bookingWindowDays: settings.bookingWindowDays,
-    nextAvailable,
-    dates,
+    date: requestedDate || null,
+    slotCapacity: payload.slotCapacity,
+    bookingWindowDays: payload.bookingWindowDays,
+    nextAvailable: payload.nextAvailable,
+    slots: payload.slots,
+    dates: payload.dates,
   });
 });
 
 app.post("/api/appointments", (req, res) => {
   const { name, email, type, format, notes, date, time } = req.body;
+  const practitionerId = String(req.body.practitionerId || req.body.practitioner || "").trim();
 
   if (!name || !email || !type || !format || !date || !time) {
     return res.status(400).json({
@@ -368,7 +522,7 @@ app.post("/api/appointments", (req, res) => {
 
   const store = readStore();
   const settings = readSettings();
-  const slot = findSlotAvailability(store.appointments, date, time);
+  const slot = findSlotAvailability(store.appointments, date, time, practitionerId);
 
   if (!slot) {
     return res.status(400).json({
@@ -380,7 +534,9 @@ app.post("/api/appointments", (req, res) => {
   if (!slot.available) {
     return res.status(409).json({
       ok: false,
-      message: "Selected slot is no longer available. Please choose another time.",
+      message: slot.unavailable
+        ? "Selected slot is unavailable right now. Please choose another time."
+        : "Selected slot is full. Please choose another time.",
     });
   }
 
@@ -390,18 +546,29 @@ app.post("/api/appointments", (req, res) => {
 
   const appointment = {
     id: Date.now(),
+    appointment_id: `APT-${Date.now().toString(36).toUpperCase()}`,
     name: String(name).trim(),
     email: String(email).trim().toLowerCase(),
+    patient_id: String(email).trim().toLowerCase(),
     type: String(type).trim(),
     format: String(format).trim(),
     notes: notes || "",
     date,
     time,
+    slot_id: slot.slot_id,
+    practitioner_id: slot.practitioner_id || practitionerId || null,
     displayDate,
     displayTime,
-    status: "confirmed",
+    status: "booked",
     confirmationCode: createConfirmationCode(),
     submittedAt: new Date().toISOString(),
+    history: [
+      {
+        event: "booked",
+        at: new Date().toISOString(),
+        details: "Appointment created through the booking system.",
+      },
+    ],
   };
 
   store.appointments.push(appointment);
@@ -473,8 +640,29 @@ app.post("/api/appointments/cancel", (req, res) => {
     });
   }
 
+  const appointmentDateTime = parseAppointmentDateTime(
+    String(appointment.date || targetDate),
+    String(appointment.time || targetTime || "09:00")
+  );
+  const hoursUntilAppointment = appointmentDateTime
+    ? appointmentDateTime.getTime() - Date.now()
+    : Number.POSITIVE_INFINITY;
+
+  if (hoursUntilAppointment < 24 * 60 * 60 * 1000) {
+    return res.status(403).json({
+      ok: false,
+      message: `Online cancellation is not available within 24 hours of your appointment. ${RECEPTION_MESSAGE}`,
+    });
+  }
+
   appointment.status = "canceled";
   appointment.canceledAt = new Date().toISOString();
+  appointment.history = Array.isArray(appointment.history) ? appointment.history : [];
+  appointment.history.push({
+    event: "canceled",
+    at: appointment.canceledAt,
+    details: "Appointment canceled through the online cancellation form.",
+  });
   writeStore(store);
 
   return sendConfirmationEmail(appointment, "canceled")
@@ -493,6 +681,9 @@ app.post("/api/appointments/cancel", (req, res) => {
       });
     });
 });
+
+const startupSettings = readSettings();
+readSlotStore(startupSettings);
 
 app.listen(PORT, () => {
   console.log(`CareConnect server running on http://localhost:${PORT}`);

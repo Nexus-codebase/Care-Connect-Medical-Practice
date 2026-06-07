@@ -26,10 +26,10 @@ const dateSelect = document.querySelector("#slot-date");
 const timeSelect = document.querySelector("#slot-time");
 const slotHelper = document.querySelector("#slot-helper");
 const availabilitySummary = document.querySelector("#availability-summary");
+const availabilityBoard = document.querySelector("#availability-board");
 
 let currentStep = 0;
 let availabilityDates = [];
-const ACCEPTED_BOOKING_ACTIONS = ["Book Appointment", "Register as New Patient"];
 
 function setStatus(node, message, state = "success") {
   if (!node) {
@@ -55,6 +55,50 @@ function getSelectedDateEntry() {
   }
 
   return availabilityDates.find((entry) => entry.date === dateSelect.value) || null;
+}
+
+function renderAvailabilityBoard(preferredDate = "") {
+  if (!availabilityBoard) {
+    return;
+  }
+
+  const selectedDateEntry =
+    availabilityDates.find((entry) => entry.date === preferredDate)
+    || getSelectedDateEntry()
+    || availabilityDates[0]
+    || null;
+
+  if (!selectedDateEntry) {
+    availabilityBoard.innerHTML = '<p class="helper-text">Availability will appear here once the server responds.</p>';
+    return;
+  }
+
+  const slotStateLabel = (slot) => {
+    if (slot.unavailable) {
+      return "Unavailable";
+    }
+
+    if (slot.full) {
+      return "Full";
+    }
+
+    return "Available";
+  };
+
+  availabilityBoard.innerHTML = `
+    <p class="availability-board-heading">${selectedDateEntry.displayDate}</p>
+    <div class="availability-board-table" aria-label="Live appointment slot availability">
+      ${selectedDateEntry.slots
+        .map((slot) => `
+          <div class="slot-row ${slot.status}">
+            <span class="slot-time">${slot.label}</span>
+            <span class="slot-pill">${slotStateLabel(slot)}</span>
+            <span class="slot-capacity">${slot.booked}/${slot.capacity} booked</span>
+          </div>
+        `)
+        .join("")}
+    </div>
+  `;
 }
 
 function syncSlotHelper() {
@@ -158,10 +202,6 @@ function populateDateOptions(preferredDate, preferredTime) {
 }
 
 async function loadAvailability(preferredDate = "", preferredTime = "") {
-  if (!dateSelect || !timeSelect) {
-    return;
-  }
-
   try {
     const response = await fetch("/api/availability");
     const result = await response.json();
@@ -171,7 +211,10 @@ async function loadAvailability(preferredDate = "", preferredTime = "") {
     }
 
     availabilityDates = Array.isArray(result.dates) ? result.dates : [];
-    populateDateOptions(preferredDate, preferredTime);
+    if (dateSelect && timeSelect) {
+      populateDateOptions(preferredDate, preferredTime);
+    }
+    renderAvailabilityBoard(preferredDate || (dateSelect ? dateSelect.value : ""));
 
     if (availabilitySummary) {
       if (result.nextAvailable) {
@@ -181,13 +224,18 @@ async function loadAvailability(preferredDate = "", preferredTime = "") {
       }
     }
   } catch (_error) {
-    dateSelect.disabled = true;
-    timeSelect.disabled = true;
-    dateSelect.innerHTML = '<option value="">Availability unavailable</option>';
-    timeSelect.innerHTML = '<option value="">Availability unavailable</option>';
-    setStatus(slotHelper, "Could not load live availability right now.", "error");
+    if (dateSelect && timeSelect) {
+      dateSelect.disabled = true;
+      timeSelect.disabled = true;
+      dateSelect.innerHTML = '<option value="">Availability unavailable</option>';
+      timeSelect.innerHTML = '<option value="">Availability unavailable</option>';
+      setStatus(slotHelper, "Could not load live availability right now.", "error");
+    }
     if (availabilitySummary) {
       availabilitySummary.textContent = "Availability could not be loaded.";
+    }
+    if (availabilityBoard) {
+      availabilityBoard.innerHTML = '<p class="helper-text">Availability could not be loaded.</p>';
     }
   }
 }
@@ -267,13 +315,6 @@ function validateCurrentStep() {
       control.reportValidity();
       return false;
     }
-  }
-
-  if (currentStep === 0 && actionSelect && !ACCEPTED_BOOKING_ACTIONS.includes(actionSelect.value)) {
-    if (actionHelper) {
-      actionHelper.textContent = "Please choose Book Appointment or Register as New Patient to continue.";
-    }
-    return false;
   }
 
   return true;
@@ -384,7 +425,7 @@ if (form && feedback) {
         return;
       }
 
-      actionHelper.textContent = "For this booking form, choose Book Appointment or Register as New Patient.";
+      actionHelper.textContent = "Continue to the next step to complete your booking.";
     });
   }
 
@@ -406,6 +447,7 @@ if (form && feedback) {
   if (dateSelect) {
     dateSelect.addEventListener("change", () => {
       populateTimeOptions();
+      renderAvailabilityBoard(dateSelect.value);
       if (currentStep === steps.length - 1) {
         buildReview();
       }
@@ -443,6 +485,10 @@ if (form && feedback) {
 
   syncStepVisibility();
   loadAvailability();
+
+  window.setInterval(() => {
+    loadAvailability(dateSelect ? dateSelect.value : "");
+  }, 30000);
 
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
@@ -516,6 +562,10 @@ if (form && feedback) {
       await loadAvailability(payload.date, payload.time);
     }
   });
+}
+
+if (availabilitySummary && (!form || !feedback)) {
+  loadAvailability();
 }
 
 if (cancelForm) {
