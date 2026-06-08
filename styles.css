@@ -612,6 +612,16 @@ a {
   background: #fafdff;
 }
 
+.cancel-form select,
+.cancel-form textarea {
+  border: 1px solid #bfd8e8;
+  border-radius: 0.7rem;
+  padding: 0.65rem 0.7rem;
+  font: inherit;
+  color: var(--ink-950);
+  background: #fafdff;
+}
+
 .appointment-form {
   background: #ffffff;
   border: 1px solid var(--line);

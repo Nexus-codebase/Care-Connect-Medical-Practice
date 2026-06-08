@@ -7,6 +7,7 @@ require("dotenv").config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 const DATA_FILE = path.join(__dirname, "data", "appointments.json");
+const PRESCRIPTION_FILE = path.join(__dirname, "data", "prescriptions.json");
 const SLOT_FILE = path.join(__dirname, "data", "appointment_slots.json");
 const SETTINGS_FILE = path.join(__dirname, "data", "settings.json");
 const DEFAULT_SLOT_TIMES = ["09:00", "10:30", "12:00", "14:00", "15:30", "17:00"];
@@ -62,6 +63,37 @@ function readStore() {
 
 function writeStore(store) {
   fs.writeFileSync(DATA_FILE, `${JSON.stringify(store, null, 2)}\n`, "utf8");
+}
+
+function readPrescriptionStore() {
+  if (!fs.existsSync(PRESCRIPTION_FILE)) {
+    return { requests: [] };
+  }
+
+  try {
+    const raw = fs.readFileSync(PRESCRIPTION_FILE, "utf8");
+    if (!raw.trim()) {
+      return { requests: [] };
+    }
+
+    const parsed = JSON.parse(raw);
+
+    if (Array.isArray(parsed)) {
+      return { requests: parsed };
+    }
+
+    if (parsed && Array.isArray(parsed.requests)) {
+      return parsed;
+    }
+  } catch {
+    return { requests: [] };
+  }
+
+  return { requests: [] };
+}
+
+function writePrescriptionStore(store) {
+  fs.writeFileSync(PRESCRIPTION_FILE, `${JSON.stringify(store, null, 2)}\n`, "utf8");
 }
 
 function writeSlotStore(slots) {
@@ -358,6 +390,10 @@ function createConfirmationCode() {
   return `CC-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`.toUpperCase();
 }
 
+function createPrescriptionCode() {
+  return `RX-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`.toUpperCase();
+}
+
 function buildSmtpTransport() {
   return nodemailer.createTransport({
     host: process.env.SMTP_HOST,
@@ -435,6 +471,33 @@ async function sendConfirmationEmail(appointment, mode) {
     to: appointment.email,
     subject,
     text,
+  });
+
+  return {
+    delivered: true,
+    simulated: false,
+    mode: mailTransport.mode,
+    previewUrl: mailTransport.mode === "test" ? nodemailer.getTestMessageUrl(info) : null,
+  };
+}
+
+async function sendPrescriptionEmail(request) {
+  const mailTransport = await getMailTransport();
+  const info = await mailTransport.transport.sendMail({
+    from: mailTransport.from,
+    to: request.email,
+    subject: `Prescription request received: ${request.medicationName}`,
+    text: [
+      `Hello ${request.fullName},`,
+      "",
+      "We have received your prescription request.",
+      `Reference: ${request.requestCode}`,
+      `Medication: ${request.medicationName} ${request.strength}`,
+      `Dose: ${request.dose}`,
+      `Quantity: ${request.quantity}`,
+      `Collection: ${request.collectionSite}`,
+      "Please allow up to 3 working days for processing.",
+    ].join("\n"),
   });
 
   return {
@@ -678,6 +741,77 @@ app.post("/api/appointments/cancel", (req, res) => {
         ok: true,
         message: "Appointment canceled and slot released, but cancellation email could not be sent.",
         emailStatus: { delivered: false, simulated: false },
+      });
+    });
+});
+
+app.post("/api/prescriptions", (req, res) => {
+  const {
+    fullName,
+    email,
+    phone,
+    dateOfBirth,
+    medicationName,
+    strength,
+    dose,
+    quantity,
+    collectionSite,
+    reason,
+    notes,
+  } = req.body;
+
+  if (!fullName || !email || !dateOfBirth || !medicationName || !strength || !dose || !collectionSite || !reason) {
+    return res.status(400).json({
+      ok: false,
+      message: "fullName, email, dateOfBirth, medicationName, strength, dose, collectionSite, and reason are required",
+    });
+  }
+
+  const normalizedQuantity = Number(quantity);
+  if (!Number.isFinite(normalizedQuantity) || normalizedQuantity < 1 || normalizedQuantity > 999) {
+    return res.status(400).json({
+      ok: false,
+      message: "quantity must be a number between 1 and 999",
+    });
+  }
+
+  const prescriptionStore = readPrescriptionStore();
+  const request = {
+    id: Date.now(),
+    requestCode: createPrescriptionCode(),
+    fullName: String(fullName).trim(),
+    email: String(email).trim().toLowerCase(),
+    phone: String(phone || "").trim(),
+    dateOfBirth: String(dateOfBirth).trim(),
+    medicationName: String(medicationName).trim(),
+    strength: String(strength).trim(),
+    dose: String(dose).trim(),
+    quantity: normalizedQuantity,
+    collectionSite: String(collectionSite).trim(),
+    reason: String(reason).trim(),
+    notes: String(notes || "").trim(),
+    status: "submitted",
+    submittedAt: new Date().toISOString(),
+  };
+
+  prescriptionStore.requests.push(request);
+  writePrescriptionStore(prescriptionStore);
+
+  return sendPrescriptionEmail(request)
+    .then((emailStatus) => {
+      res.status(201).json({
+        ok: true,
+        message: "Prescription request submitted.",
+        emailStatus,
+        request,
+      });
+    })
+    .catch(() => {
+      res.status(201).json({
+        ok: true,
+        message: "Prescription request submitted, but email confirmation could not be sent.",
+        emailStatus: { delivered: false, simulated: false },
+        request,
       });
     });
 });

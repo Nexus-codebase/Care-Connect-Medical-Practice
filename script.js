@@ -8,6 +8,8 @@ const form = document.querySelector("#appointment-form");
 const feedback = document.querySelector("#form-feedback");
 const cancelForm = document.querySelector("#cancel-form");
 const cancelFeedback = document.querySelector("#cancel-feedback");
+const prescriptionForm = document.querySelector("#prescription-form");
+const prescriptionFeedback = document.querySelector("#prescription-feedback");
 const revealNodes = document.querySelectorAll(".reveal");
 const steps = form ? Array.from(form.querySelectorAll(".wizard-step")) : [];
 const stepIndicator = document.querySelector("#step-indicator");
@@ -613,6 +615,57 @@ if (cancelForm) {
       await loadAvailability();
     } catch (error) {
       setStatus(cancelFeedback, error.message || "Could not cancel that appointment.", "error");
+    }
+  });
+}
+
+if (prescriptionForm) {
+  prescriptionForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    if (!prescriptionForm.checkValidity()) {
+      prescriptionForm.reportValidity();
+      setStatus(prescriptionFeedback, "Please complete all required prescription details.", "error");
+      return;
+    }
+
+    const formData = new FormData(prescriptionForm);
+    const payload = {
+      fullName: String(formData.get("fullName") || "").trim(),
+      email: String(formData.get("email") || "").trim(),
+      phone: String(formData.get("phone") || "").trim(),
+      dateOfBirth: String(formData.get("dateOfBirth") || "").trim(),
+      medicationName: String(formData.get("medicationName") || "").trim(),
+      strength: String(formData.get("strength") || "").trim(),
+      dose: String(formData.get("dose") || "").trim(),
+      quantity: Number(formData.get("quantity") || 0),
+      collectionSite: String(formData.get("collectionSite") || "").trim(),
+      reason: String(formData.get("reason") || "").trim(),
+      notes: String(formData.get("notes") || "").trim(),
+    };
+
+    try {
+      const response = await fetch("/api/prescriptions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+      const result = await response.json();
+
+      if (!response.ok || !result.ok) {
+        throw new Error(result.message || "Could not submit prescription request.");
+      }
+
+      const request = result.request || {};
+      setStatus(
+        prescriptionFeedback,
+        `Prescription request received for ${request.medicationName || payload.medicationName}. Reference: ${request.requestCode || "pending"}.`
+      );
+      prescriptionForm.reset();
+    } catch (error) {
+      setStatus(prescriptionFeedback, error.message || "Could not submit prescription request.", "error");
     }
   });
 }

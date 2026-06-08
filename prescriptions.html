@@ -113,6 +113,84 @@
         </div>
       </section>
 
+      <section class="section cancel-section">
+        <div class="container reveal">
+          <div class="cancel-shell">
+            <div>
+              <p class="eyebrow">Online repeat request</p>
+              <h2 class="section-title">Request a repeat prescription</h2>
+              <p class="section-copy">
+                Complete this secure form for repeat medication requests. We
+                will review your request and send confirmation by email.
+              </p>
+            </div>
+
+            <form class="cancel-form cancel-form-bottom" id="prescription-form" novalidate>
+              <div class="cancel-grid">
+                <label>
+                  Full name
+                  <input type="text" name="fullName" required />
+                </label>
+                <label>
+                  Email
+                  <input type="email" name="email" required />
+                </label>
+                <label>
+                  Phone number
+                  <input type="tel" name="phone" required />
+                </label>
+                <label>
+                  Date of birth
+                  <input type="date" name="dateOfBirth" required />
+                </label>
+                <label>
+                  Medication name
+                  <input type="text" name="medicationName" required />
+                </label>
+                <label>
+                  Strength
+                  <input type="text" name="strength" placeholder="e.g., 10mg" required />
+                </label>
+                <label>
+                  Dose instructions
+                  <input type="text" name="dose" placeholder="e.g., 1 tablet daily" required />
+                </label>
+                <label>
+                  Quantity
+                  <input type="number" name="quantity" min="1" max="999" required />
+                </label>
+                <label>
+                  Collection pharmacy
+                  <select name="collectionSite" required>
+                    <option value="">Select one</option>
+                    <option>On-site pharmacy</option>
+                    <option>Cromwell Medical Centre pharmacy</option>
+                    <option>Wormley Medical Centre pharmacy</option>
+                    <option>Other nominated pharmacy</option>
+                  </select>
+                </label>
+                <label>
+                  Request reason
+                  <select name="reason" required>
+                    <option value="">Select one</option>
+                    <option>Repeat medication</option>
+                    <option>Medication running out in 7 days</option>
+                    <option>Urgent continuity request</option>
+                    <option>Medication review requested</option>
+                  </select>
+                </label>
+                <label class="field-span">
+                  Additional notes (optional)
+                  <textarea name="notes" rows="3" placeholder="Any changes, concerns, or preferred collection details"></textarea>
+                </label>
+              </div>
+              <button class="btn btn-primary" type="submit">Submit prescription request</button>
+              <p class="form-feedback" id="prescription-feedback" role="status" aria-live="polite"></p>
+            </form>
+          </div>
+        </div>
+      </section>
+
       <section class="section">
         <div class="container nhs-info-grid reveal">
           <article class="feature-card">
