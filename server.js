@@ -2,6 +2,8 @@ const express = require("express");
 const fs = require("fs");
 const path = require("path");
 const nodemailer = require("nodemailer");
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 require("dotenv").config();
 
 const app = express();
@@ -10,8 +12,12 @@ const DATA_FILE = path.join(__dirname, "data", "appointments.json");
 const PRESCRIPTION_FILE = path.join(__dirname, "data", "prescriptions.json");
 const SLOT_FILE = path.join(__dirname, "data", "appointment_slots.json");
 const SETTINGS_FILE = path.join(__dirname, "data", "settings.json");
+const USERS_FILE = path.join(__dirname, "data", "users.json");
+const PATIENTS_FILE = path.join(__dirname, "data", "patients.json");
+const NOTIFICATIONS_FILE = path.join(__dirname, "data", "notifications.json");
 const DEFAULT_SLOT_TIMES = ["09:00", "10:30", "12:00", "14:00", "15:30", "17:00"];
 const DEFAULT_SLOT_MINUTES = 15;
+const AUTH_SECRET = process.env.AUTH_SECRET || "careconnect-dev-secret-change-me";
 const RECEPTION_MESSAGE = "Please call reception: Cromwell Medical Centre 01992 624732 or Wormley Medical Centre 01992 440877.";
 const DEFAULT_SETTINGS = {
   slotCapacity: Number(process.env.SLOT_CAPACITY || 2),
@@ -33,6 +39,120 @@ let cachedMailTransportPromise;
 
 app.use(express.json());
 app.use(express.static(__dirname));
+
+function readJsonCollection(filePath, key) {
+  if (!fs.existsSync(filePath)) {
+    return { [key]: [] };
+  }
+
+  try {
+    const raw = fs.readFileSync(filePath, "utf8");
+    if (!raw.trim()) {
+      return { [key]: [] };
+    }
+
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed)) {
+      return { [key]: parsed };
+    }
+
+    if (parsed && Array.isArray(parsed[key])) {
+      return parsed;
+    }
+  } catch {
+    return { [key]: [] };
+  }
+
+  return { [key]: [] };
+}
+
+function writeJsonCollection(filePath, store) {
+  fs.writeFileSync(filePath, `${JSON.stringify(store, null, 2)}\n`, "utf8");
+}
+
+function createEntityId(prefix) {
+  return `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`.toUpperCase();
+}
+
+function sanitizeUser(user) {
+  return {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    role: user.role || "staff",
+  };
+}
+
+function signAuthToken(user) {
+  return jwt.sign(
+    {
+      sub: user.id,
+      email: user.email,
+      role: user.role || "staff",
+      name: user.name,
+    },
+    AUTH_SECRET,
+    { expiresIn: "12h" }
+  );
+}
+
+function readBearerToken(req) {
+  const authHeader = String(req.headers.authorization || "");
+  if (!authHeader.toLowerCase().startsWith("bearer ")) {
+    return "";
+  }
+
+  return authHeader.slice(7).trim();
+}
+
+function requireSystemAuth(req, res, next) {
+  const token = readBearerToken(req);
+  if (!token) {
+    return res.status(401).json({ ok: false, message: "Authentication required." });
+  }
+
+  try {
+    const payload = jwt.verify(token, AUTH_SECRET);
+    req.auth = payload;
+    return next();
+  } catch {
+    return res.status(401).json({ ok: false, message: "Invalid or expired session." });
+  }
+}
+
+function requireRoles(...roles) {
+  return (req, res, next) => {
+    const role = String(req.auth && req.auth.role ? req.auth.role : "").toLowerCase();
+    const allowed = roles.map((entry) => String(entry).toLowerCase());
+    if (!allowed.includes(role)) {
+      return res.status(403).json({ ok: false, message: "Insufficient permission for this action." });
+    }
+
+    return next();
+  };
+}
+
+function verifyUserPassword(user, password) {
+  if (user.passwordHash) {
+    return { valid: bcrypt.compareSync(password, user.passwordHash), migrated: false };
+  }
+
+  if (user.password && String(user.password) === String(password)) {
+    user.passwordHash = bcrypt.hashSync(String(password), 10);
+    delete user.password;
+    return { valid: true, migrated: true };
+  }
+
+  return { valid: false, migrated: false };
+}
+
+app.use("/api/system", (req, res, next) => {
+  if (req.path.startsWith("/auth/")) {
+    return next();
+  }
+
+  return requireSystemAuth(req, res, next);
+});
 
 function readStore() {
   if (!fs.existsSync(DATA_FILE)) {
@@ -94,6 +214,30 @@ function readPrescriptionStore() {
 
 function writePrescriptionStore(store) {
   fs.writeFileSync(PRESCRIPTION_FILE, `${JSON.stringify(store, null, 2)}\n`, "utf8");
+}
+
+function readUsersStore() {
+  return readJsonCollection(USERS_FILE, "users");
+}
+
+function writeUsersStore(store) {
+  writeJsonCollection(USERS_FILE, store);
+}
+
+function readPatientsStore() {
+  return readJsonCollection(PATIENTS_FILE, "patients");
+}
+
+function writePatientsStore(store) {
+  writeJsonCollection(PATIENTS_FILE, store);
+}
+
+function readNotificationsStore() {
+  return readJsonCollection(NOTIFICATIONS_FILE, "notifications");
+}
+
+function writeNotificationsStore(store) {
+  writeJsonCollection(NOTIFICATIONS_FILE, store);
 }
 
 function writeSlotStore(slots) {
@@ -814,6 +958,473 @@ app.post("/api/prescriptions", (req, res) => {
         request,
       });
     });
+});
+
+app.post("/api/system/auth/signup", (req, res) => {
+  const name = String(req.body.name || "").trim();
+  const email = String(req.body.email || "").trim().toLowerCase();
+  const password = String(req.body.password || "").trim();
+
+  if (!name || !email || !password) {
+    return res.status(400).json({ ok: false, message: "name, email, and password are required." });
+  }
+
+  if (password.length < 6) {
+    return res.status(400).json({ ok: false, message: "password must be at least 6 characters." });
+  }
+
+  const usersStore = readUsersStore();
+  const exists = usersStore.users.some((user) => String(user.email || "").toLowerCase() === email);
+  if (exists) {
+    return res.status(409).json({ ok: false, message: "An account with this email already exists." });
+  }
+
+  const user = {
+    id: createEntityId("USR"),
+    name,
+    email,
+    passwordHash: bcrypt.hashSync(password, 10),
+    role: "staff",
+    createdAt: new Date().toISOString(),
+  };
+
+  usersStore.users.push(user);
+  writeUsersStore(usersStore);
+  return res.status(201).json({ ok: true, user: sanitizeUser(user) });
+});
+
+app.post("/api/system/auth/login", (req, res) => {
+  const email = String(req.body.email || "").trim().toLowerCase();
+  const password = String(req.body.password || "").trim();
+
+  if (!email || !password) {
+    return res.status(400).json({ ok: false, message: "email and password are required." });
+  }
+
+  const usersStore = readUsersStore();
+  const user = usersStore.users.find((entry) => String(entry.email || "").toLowerCase() === email);
+
+  if (!user) {
+    return res.status(401).json({ ok: false, message: "Invalid email or password." });
+  }
+
+  const passwordCheck = verifyUserPassword(user, password);
+  if (!passwordCheck.valid) {
+    return res.status(401).json({ ok: false, message: "Invalid email or password." });
+  }
+
+  user.lastLoginAt = new Date().toISOString();
+  if (!user.role) {
+    user.role = "staff";
+  }
+  writeUsersStore(usersStore);
+  const safeUser = sanitizeUser(user);
+  const token = signAuthToken(user);
+  return res.json({ ok: true, user: safeUser, token });
+});
+
+app.get("/api/system/dashboard", (_req, res) => {
+  const patientsStore = readPatientsStore();
+  const store = readStore();
+  const notificationsStore = readNotificationsStore();
+  const today = toIsoDate(new Date());
+
+  const activeAppointments = store.appointments.filter(
+    (appointment) => String(appointment.status || "").toLowerCase() !== "canceled"
+      && String(appointment.status || "").toLowerCase() !== "cancelled"
+  );
+
+  const todayAppointments = activeAppointments.filter((appointment) => String(appointment.date || "") === today);
+  const unread = notificationsStore.notifications.filter((item) => !item.read).length;
+
+  return res.json({
+    ok: true,
+    stats: {
+      patients: patientsStore.patients.length,
+      activeAppointments: activeAppointments.length,
+      todayAppointments: todayAppointments.length,
+      unreadNotifications: unread,
+    },
+  });
+});
+
+app.get("/api/system/patients", (req, res) => {
+  const query = String(req.query.query || "").trim().toLowerCase();
+  const patientsStore = readPatientsStore();
+
+  const rows = query
+    ? patientsStore.patients.filter((patient) => [patient.fullName, patient.email, patient.phone]
+      .map((value) => String(value || "").toLowerCase())
+      .some((value) => value.includes(query)))
+    : patientsStore.patients;
+
+  return res.json({ ok: true, patients: rows });
+});
+
+app.post("/api/system/patients", requireRoles("admin", "staff"), (req, res) => {
+  const fullName = String(req.body.fullName || "").trim();
+  const email = String(req.body.email || "").trim().toLowerCase();
+
+  if (!fullName || !email) {
+    return res.status(400).json({ ok: false, message: "fullName and email are required." });
+  }
+
+  const patientsStore = readPatientsStore();
+  const patient = {
+    id: createEntityId("PAT"),
+    fullName,
+    email,
+    phone: String(req.body.phone || "").trim(),
+    dateOfBirth: String(req.body.dateOfBirth || "").trim(),
+    address: String(req.body.address || "").trim(),
+    medicalHistory: String(req.body.medicalHistory || "").trim(),
+    notes: [],
+    documents: [],
+    createdAt: new Date().toISOString(),
+  };
+
+  patientsStore.patients.push(patient);
+  writePatientsStore(patientsStore);
+  return res.status(201).json({ ok: true, patient });
+});
+
+app.get("/api/system/patients/:id", (req, res) => {
+  const patientsStore = readPatientsStore();
+  const patient = patientsStore.patients.find((entry) => String(entry.id) === String(req.params.id));
+  if (!patient) {
+    return res.status(404).json({ ok: false, message: "Patient not found." });
+  }
+
+  return res.json({ ok: true, patient });
+});
+
+app.put("/api/system/patients/:id", requireRoles("admin", "staff"), (req, res) => {
+  const patientsStore = readPatientsStore();
+  const patient = patientsStore.patients.find((entry) => String(entry.id) === String(req.params.id));
+  if (!patient) {
+    return res.status(404).json({ ok: false, message: "Patient not found." });
+  }
+
+  patient.fullName = String(req.body.fullName || patient.fullName || "").trim();
+  patient.email = String(req.body.email || patient.email || "").trim().toLowerCase();
+  patient.phone = String(req.body.phone || patient.phone || "").trim();
+  patient.dateOfBirth = String(req.body.dateOfBirth || patient.dateOfBirth || "").trim();
+  patient.address = String(req.body.address || patient.address || "").trim();
+  patient.medicalHistory = String(req.body.medicalHistory || patient.medicalHistory || "").trim();
+  patient.updatedAt = new Date().toISOString();
+
+  writePatientsStore(patientsStore);
+  return res.json({ ok: true, patient });
+});
+
+app.get("/api/system/patients/:id/notes", (req, res) => {
+  const patientsStore = readPatientsStore();
+  const patient = patientsStore.patients.find((entry) => String(entry.id) === String(req.params.id));
+  if (!patient) {
+    return res.status(404).json({ ok: false, message: "Patient not found." });
+  }
+
+  return res.json({ ok: true, notes: Array.isArray(patient.notes) ? patient.notes : [] });
+});
+
+app.post("/api/system/patients/:id/notes", requireRoles("admin", "staff"), (req, res) => {
+  const text = String(req.body.text || "").trim();
+  if (!text) {
+    return res.status(400).json({ ok: false, message: "text is required." });
+  }
+
+  const patientsStore = readPatientsStore();
+  const patient = patientsStore.patients.find((entry) => String(entry.id) === String(req.params.id));
+  if (!patient) {
+    return res.status(404).json({ ok: false, message: "Patient not found." });
+  }
+
+  const note = {
+    id: createEntityId("NOTE"),
+    text,
+    author: String(req.body.author || "Staff").trim(),
+    createdAt: new Date().toISOString(),
+  };
+
+  patient.notes = Array.isArray(patient.notes) ? patient.notes : [];
+  patient.notes.unshift(note);
+  writePatientsStore(patientsStore);
+  return res.status(201).json({ ok: true, note });
+});
+
+app.post("/api/system/patients/:id/documents", requireRoles("admin", "staff"), (req, res) => {
+  const title = String(req.body.title || "").trim();
+  if (!title) {
+    return res.status(400).json({ ok: false, message: "title is required." });
+  }
+
+  const patientsStore = readPatientsStore();
+  const patient = patientsStore.patients.find((entry) => String(entry.id) === String(req.params.id));
+  if (!patient) {
+    return res.status(404).json({ ok: false, message: "Patient not found." });
+  }
+
+  const document = {
+    id: createEntityId("DOC"),
+    title,
+    url: String(req.body.url || "").trim(),
+    createdAt: new Date().toISOString(),
+  };
+
+  patient.documents = Array.isArray(patient.documents) ? patient.documents : [];
+  patient.documents.unshift(document);
+  writePatientsStore(patientsStore);
+  return res.status(201).json({ ok: true, document });
+});
+
+app.get("/api/system/appointments", (req, res) => {
+  const patientId = String(req.query.patientId || "").trim();
+  const status = String(req.query.status || "").trim().toLowerCase();
+  const patientsStore = readPatientsStore();
+  const store = readStore();
+
+  let rows = store.appointments.map((appointment) => {
+    const patient = patientsStore.patients.find((entry) => String(entry.id) === String(appointment.patientRef || ""));
+    return {
+      ...appointment,
+      patientName: patient ? patient.fullName : appointment.name,
+      patientRef: appointment.patientRef || null,
+    };
+  });
+
+  if (patientId) {
+    rows = rows.filter((entry) => String(entry.patientRef || "") === patientId);
+  }
+
+  if (status) {
+    rows = rows.filter((entry) => String(entry.status || "").toLowerCase() === status);
+  }
+
+  return res.json({ ok: true, appointments: rows });
+});
+
+app.post("/api/system/appointments/schedule", requireRoles("admin", "staff"), (req, res) => {
+  const patientId = String(req.body.patientId || "").trim();
+  const date = String(req.body.date || "").trim();
+  const time = String(req.body.time || "").trim();
+  const type = String(req.body.type || "General Consultation").trim();
+  const format = String(req.body.format || "In-clinic").trim();
+  const practitionerId = String(req.body.practitionerId || "").trim();
+  const notes = String(req.body.notes || "").trim();
+
+  if (!patientId || !date || !time) {
+    return res.status(400).json({ ok: false, message: "patientId, date, and time are required." });
+  }
+
+  const patientsStore = readPatientsStore();
+  const patient = patientsStore.patients.find((entry) => String(entry.id) === patientId);
+  if (!patient) {
+    return res.status(404).json({ ok: false, message: "Patient not found." });
+  }
+
+  const store = readStore();
+  const settings = readSettings();
+  const slot = findSlotAvailability(store.appointments, date, time, practitionerId);
+  if (!slot || !slot.available) {
+    return res.status(409).json({ ok: false, message: "Selected slot is unavailable." });
+  }
+
+  const selectedDate = buildSlots(store.appointments, settings).find((slotDate) => slotDate.date === date);
+  const displayDate = selectedDate ? selectedDate.displayDate : date;
+
+  const appointment = {
+    id: Date.now(),
+    appointment_id: `APT-${Date.now().toString(36).toUpperCase()}`,
+    patientRef: patient.id,
+    name: patient.fullName,
+    email: patient.email,
+    patient_id: patient.email,
+    type,
+    format,
+    notes,
+    date,
+    time,
+    slot_id: slot.slot_id,
+    practitioner_id: slot.practitioner_id || practitionerId || null,
+    displayDate,
+    displayTime: slot.label,
+    status: "booked",
+    confirmationCode: createConfirmationCode(),
+    submittedAt: new Date().toISOString(),
+    history: [
+      {
+        event: "booked",
+        at: new Date().toISOString(),
+        details: "Appointment created via system portal.",
+      },
+    ],
+  };
+
+  store.appointments.push(appointment);
+  writeStore(store);
+
+  const notificationsStore = readNotificationsStore();
+  notificationsStore.notifications.unshift({
+    id: createEntityId("NTF"),
+    type: "appointment",
+    title: "New appointment scheduled",
+    message: `${patient.fullName} booked ${displayDate} at ${slot.label}.`,
+    appointmentId: appointment.appointment_id,
+    patientId: patient.id,
+    read: false,
+    createdAt: new Date().toISOString(),
+  });
+  writeNotificationsStore(notificationsStore);
+
+  return res.status(201).json({ ok: true, appointment });
+});
+
+app.put("/api/system/appointments/:id/reschedule", requireRoles("admin", "staff"), (req, res) => {
+  const date = String(req.body.date || "").trim();
+  const time = String(req.body.time || "").trim();
+  if (!date || !time) {
+    return res.status(400).json({ ok: false, message: "date and time are required." });
+  }
+
+  const store = readStore();
+  const target = store.appointments.find((entry) => String(entry.appointment_id || entry.id) === String(req.params.id));
+  if (!target) {
+    return res.status(404).json({ ok: false, message: "Appointment not found." });
+  }
+
+  if (String(target.status || "").toLowerCase() === "canceled") {
+    return res.status(400).json({ ok: false, message: "Canceled appointments cannot be rescheduled." });
+  }
+
+  const sameSlot = String(target.date) === date && String(target.time) === time;
+  if (!sameSlot) {
+    const slot = findSlotAvailability(store.appointments, date, time, String(target.practitioner_id || ""));
+    if (!slot || !slot.available) {
+      return res.status(409).json({ ok: false, message: "Selected slot is unavailable." });
+    }
+
+    target.date = date;
+    target.time = time;
+    target.slot_id = slot.slot_id;
+    target.displayTime = slot.label;
+  }
+
+  const settings = readSettings();
+  const selectedDate = buildSlots(store.appointments, settings).find((slotDate) => slotDate.date === date);
+  target.displayDate = selectedDate ? selectedDate.displayDate : date;
+  target.history = Array.isArray(target.history) ? target.history : [];
+  target.history.push({
+    event: "rescheduled",
+    at: new Date().toISOString(),
+    details: `Appointment moved to ${target.displayDate} ${target.displayTime || target.time}.`,
+  });
+
+  writeStore(store);
+  return res.json({ ok: true, appointment: target });
+});
+
+app.put("/api/system/appointments/:id/cancel", requireRoles("admin", "staff"), (req, res) => {
+  const store = readStore();
+  const target = store.appointments.find((entry) => String(entry.appointment_id || entry.id) === String(req.params.id));
+  if (!target) {
+    return res.status(404).json({ ok: false, message: "Appointment not found." });
+  }
+
+  if (String(target.status || "").toLowerCase() === "canceled") {
+    return res.json({ ok: true, appointment: target });
+  }
+
+  target.status = "canceled";
+  target.canceledAt = new Date().toISOString();
+  target.history = Array.isArray(target.history) ? target.history : [];
+  target.history.push({
+    event: "canceled",
+    at: target.canceledAt,
+    details: String(req.body.reason || "Canceled by staff from portal."),
+  });
+
+  writeStore(store);
+  return res.json({ ok: true, appointment: target });
+});
+
+app.get("/api/system/notifications", (req, res) => {
+  const unreadOnly = String(req.query.unread || "").toLowerCase() === "true";
+  const store = readNotificationsStore();
+  const rows = unreadOnly ? store.notifications.filter((entry) => !entry.read) : store.notifications;
+  return res.json({ ok: true, notifications: rows });
+});
+
+app.post("/api/system/notifications/open-alert", requireRoles("admin", "staff"), (req, res) => {
+  const title = String(req.body.title || "").trim();
+  const message = String(req.body.message || "").trim();
+  if (!title || !message) {
+    return res.status(400).json({ ok: false, message: "title and message are required." });
+  }
+
+  const store = readNotificationsStore();
+  const notification = {
+    id: createEntityId("NTF"),
+    type: "alert",
+    title,
+    message,
+    patientId: String(req.body.patientId || "").trim() || null,
+    appointmentId: String(req.body.appointmentId || "").trim() || null,
+    read: false,
+    createdAt: new Date().toISOString(),
+  };
+
+  store.notifications.unshift(notification);
+  writeNotificationsStore(store);
+  return res.status(201).json({ ok: true, notification });
+});
+
+app.get("/api/system/profile/:userId", (req, res) => {
+  const requesterId = String(req.auth && req.auth.sub ? req.auth.sub : "");
+  const requesterRole = String(req.auth && req.auth.role ? req.auth.role : "").toLowerCase();
+  const targetId = String(req.params.userId || "");
+  if (requesterRole !== "admin" && requesterId !== targetId) {
+    return res.status(403).json({ ok: false, message: "You can only access your own profile." });
+  }
+
+  const usersStore = readUsersStore();
+  const user = usersStore.users.find((entry) => String(entry.id) === String(req.params.userId));
+  if (!user) {
+    return res.status(404).json({ ok: false, message: "User not found." });
+  }
+
+  return res.json({ ok: true, profile: sanitizeUser(user) });
+});
+
+app.put("/api/system/profile/:userId", (req, res) => {
+  const requesterId = String(req.auth && req.auth.sub ? req.auth.sub : "");
+  const requesterRole = String(req.auth && req.auth.role ? req.auth.role : "").toLowerCase();
+  const targetId = String(req.params.userId || "");
+  if (requesterRole !== "admin" && requesterId !== targetId) {
+    return res.status(403).json({ ok: false, message: "You can only update your own profile." });
+  }
+
+  const usersStore = readUsersStore();
+  const user = usersStore.users.find((entry) => String(entry.id) === String(req.params.userId));
+  if (!user) {
+    return res.status(404).json({ ok: false, message: "User not found." });
+  }
+
+  if (req.body.name) {
+    user.name = String(req.body.name).trim();
+  }
+
+  if (req.body.password) {
+    const password = String(req.body.password).trim();
+    if (password.length < 6) {
+      return res.status(400).json({ ok: false, message: "password must be at least 6 characters." });
+    }
+    user.passwordHash = bcrypt.hashSync(password, 10);
+    delete user.password;
+  }
+
+  user.updatedAt = new Date().toISOString();
+  writeUsersStore(usersStore);
+  return res.json({ ok: true, profile: sanitizeUser(user) });
 });
 
 const startupSettings = readSettings();

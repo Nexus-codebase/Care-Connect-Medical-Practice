@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CareConnect Portal Appointments</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <link rel="manifest" href="site.webmanifest" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Source+Serif+4:wght@500;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body class="portal-page">
+    <aside class="med-sidebar" aria-label="Portal sidebar navigation">
+      <div class="med-logo">Medicare<span>Pro</span></div>
+      <nav class="med-menu">
+        <a href="portal.html">Dashboard</a>
+        <a href="portal-patients.html">Patients</a>
+        <a class="active" href="portal-appointments.html">Appointments</a>
+        <a href="portal-notifications.html">Notifications</a>
+        <a href="portal-settings.html">Settings</a>
+      </nav>
+    </aside>
+
+    <main class="med-main">
+      <section class="section">
+        <div class="container reveal">
+          <header class="topbar page-topbar">
+            <h1>Appointments</h1>
+            <div class="dashboard-page-links">
+              <a href="portal.html">Dashboard</a>
+              <a href="portal-patients.html">Patients</a>
+              <a href="portal-settings.html">Settings</a>
+            </div>
+          </header>
+        </div>
+      </section>
+
+      <section class="section" id="appointments-section">
+        <div class="container portal-grid reveal">
+          <article class="portal-card panel appointments-list-card">
+            <h2>Appointments</h2>
+            <div class="portal-table-wrap">
+              <table class="portal-table table" id="appointments-table">
+                <thead>
+                  <tr><th>Appointment</th><th>Status</th><th>Actions</th></tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </article>
+
+          <form class="portal-card" id="schedule-form" novalidate>
+            <h2>Schedule Appointment</h2>
+            <label>Patient<select name="patientId" id="schedule-patient" required></select></label>
+            <label>Date<select name="date" id="schedule-date" required></select></label>
+            <label>Time<select name="time" id="schedule-time" required></select></label>
+            <label>Type<input type="text" name="type" value="General Consultation" /></label>
+            <label>Format
+              <select name="format">
+                <option>In-clinic</option>
+                <option>Video consultation</option>
+                <option>Telephone consultation</option>
+              </select>
+            </label>
+            <label>Notes<textarea name="notes" rows="2"></textarea></label>
+            <button class="btn btn-primary" type="submit">Confirm appointment</button>
+            <p class="form-feedback" id="schedule-feedback" role="status" aria-live="polite"></p>
+          </form>
+        </div>
+      </section>
+    </main>
+
+    <script src="script.js"></script>
+    <script src="portal.js"></script>
+  </body>
+</html>

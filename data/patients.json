@@ -1,0 +1,30 @@
+{
+  "patients": [
+    {
+      "id": "PAT-SEED-001",
+      "fullName": "Amina Rahman",
+      "email": "amina.rahman@example.com",
+      "phone": "+92-300-1111111",
+      "dateOfBirth": "1990-04-18",
+      "address": "Street 10, City Center",
+      "medicalHistory": "Seasonal allergies and mild asthma.",
+      "notes": [
+        {
+          "id": "NOTE-SEED-001",
+          "text": "Patient prefers afternoon appointments.",
+          "author": "CareConnect Admin",
+          "createdAt": "2026-06-10T00:00:00.000Z"
+        }
+      ],
+      "documents": [
+        {
+          "id": "DOC-SEED-001",
+          "title": "Allergy panel report",
+          "url": "",
+          "createdAt": "2026-06-10T00:00:00.000Z"
+        }
+      ],
+      "createdAt": "2026-06-10T00:00:00.000Z"
+    }
+  ]
+}

@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CareConnect Portal Patients</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <link rel="manifest" href="site.webmanifest" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Source+Serif+4:wght@500;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body class="portal-page">
+    <aside class="med-sidebar" aria-label="Portal sidebar navigation">
+      <div class="med-logo">Medicare<span>Pro</span></div>
+      <nav class="med-menu">
+        <a href="portal.html">Dashboard</a>
+        <a class="active" href="portal-patients.html">Patients</a>
+        <a href="portal-appointments.html">Appointments</a>
+        <a href="portal-notifications.html">Notifications</a>
+        <a href="portal-settings.html">Settings</a>
+      </nav>
+    </aside>
+
+    <main class="med-main">
+      <section class="section">
+        <div class="container reveal">
+          <header class="topbar page-topbar">
+            <h1>Patients</h1>
+            <div class="dashboard-page-links">
+              <a href="portal.html">Dashboard</a>
+              <a href="portal-appointments.html">Appointments</a>
+              <a href="portal-settings.html">Settings</a>
+            </div>
+          </header>
+        </div>
+      </section>
+
+      <section class="section" id="patients-section">
+        <div class="container reveal patients-dashboard">
+          <header class="patients-heading">
+            <div>
+              <p>Manage and view all patient records</p>
+              <h2>Patients</h2>
+            </div>
+            <button class="btn btn-primary" id="open-add-patient" type="button">Add New Patient</button>
+          </header>
+
+          <div class="patients-stats">
+            <article class="patients-mini-stat"><strong id="patients-stat-total">--</strong><span>Total Patients</span></article>
+            <article class="patients-mini-stat"><strong id="patients-stat-stable">--</strong><span>Stable</span></article>
+            <article class="patients-mini-stat"><strong id="patients-stat-critical">--</strong><span>Critical</span></article>
+            <article class="patients-mini-stat"><strong id="patients-stat-recovering">--</strong><span>Recovering</span></article>
+          </div>
+
+          <article class="portal-card panel patients-records-card">
+            <div class="patients-records-top">
+              <h2>Patient Records</h2>
+              <div class="patients-controls">
+                <div class="patients-search-wrap">
+                  <input id="patient-search-input" type="text" placeholder="Search patients..." />
+                  <button class="btn btn-ghost" id="patient-search-button" type="button">Search</button>
+                </div>
+              </div>
+            </div>
+            <div class="portal-table-wrap">
+              <table class="portal-table table" id="patients-table">
+                <thead>
+                  <tr>
+                    <th>Patient</th>
+                    <th>ID</th>
+                    <th>Demographics</th>
+                    <th>Condition</th>
+                    <th>Status</th>
+                    <th>Last Visit</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </article>
+
+          <form class="portal-card patients-add-card" id="add-patient-form" novalidate>
+            <h2>Add New Patient</h2>
+            <label>Full name<input type="text" name="fullName" required /></label>
+            <label>Email<input type="email" name="email" required /></label>
+            <label>Phone<input type="text" name="phone" /></label>
+            <label>Date of birth<input type="date" name="dateOfBirth" /></label>
+            <label>Address<input type="text" name="address" /></label>
+            <label>Medical history<textarea name="medicalHistory" rows="3"></textarea></label>
+            <button class="btn btn-primary" type="submit">Save new patient</button>
+            <p class="form-feedback" id="add-patient-feedback" role="status" aria-live="polite"></p>
+          </form>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="container reveal patient-details-layout">
+          <article class="portal-card" id="patient-profile-card">
+            <h2>Patient Profile</h2>
+            <p class="helper-text" id="selected-patient-label">Select a patient to view profile.</p>
+            <div class="portal-profile" id="patient-profile"></div>
+          </article>
+
+          <div class="portal-grid patient-side-tools">
+            <form class="portal-card" id="note-form" novalidate>
+              <h2>Add Note</h2>
+              <label>Note<textarea name="text" rows="3" required></textarea></label>
+              <button class="btn btn-primary" type="submit">Save note</button>
+              <p class="form-feedback" id="note-feedback" role="status" aria-live="polite"></p>
+            </form>
+
+            <form class="portal-card" id="document-form" novalidate>
+              <h2>Upload Document (metadata)</h2>
+              <label>Title<input type="text" name="title" required /></label>
+              <label>URL<input type="url" name="url" placeholder="https://..." /></label>
+              <button class="btn btn-ghost" type="submit">Save document</button>
+              <p class="form-feedback" id="document-feedback" role="status" aria-live="polite"></p>
+            </form>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script src="script.js"></script>
+    <script src="portal.js"></script>
+  </body>
+</html>

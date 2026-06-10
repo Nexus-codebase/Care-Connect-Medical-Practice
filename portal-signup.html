@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CareConnect Portal Signup</title>
+    <meta name="description" content="Create a staff account for CareConnect clinical portal." />
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <link rel="manifest" href="site.webmanifest" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body class="portal-auth-page">
+    <main class="auth-shell">
+      <section class="auth-card" aria-labelledby="portal-signup-title">
+        <p class="auth-eyebrow">CareConnect Portal</p>
+        <h1 id="portal-signup-title">Create Account</h1>
+        <p class="auth-note">Staff signup creates a new portal user with secure authentication.</p>
+
+        <form id="portal-signup-form" novalidate>
+          <label>Name<input type="text" name="name" required /></label>
+          <label>Email<input type="email" name="email" required /></label>
+          <label>Password<input type="password" name="password" minlength="6" required /></label>
+          <button class="btn btn-primary" type="submit">Create account</button>
+          <p class="form-feedback" id="portal-signup-feedback" role="status" aria-live="polite"></p>
+        </form>
+
+        <p class="auth-switch">Already have an account? <a href="portal-login.html">Sign in</a></p>
+        <p class="auth-switch"><a href="index.html">Back to website</a></p>
+      </section>
+    </main>
+
+    <script src="portal-auth.js"></script>
+  </body>
+</html>

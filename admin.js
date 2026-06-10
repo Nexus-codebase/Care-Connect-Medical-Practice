@@ -4,6 +4,10 @@ const bookingWindowInput = document.querySelector("#booking-window");
 const slotTimesInput = document.querySelector("#slot-times");
 const adminFeedback = document.querySelector("#admin-feedback");
 const smtpStatus = document.querySelector("#smtp-status");
+const kpiSlotCapacity = document.querySelector("#kpi-slot-capacity");
+const kpiBookingWindow = document.querySelector("#kpi-booking-window");
+const kpiSlotCount = document.querySelector("#kpi-slot-count");
+const kpiSmtp = document.querySelector("#kpi-smtp");
 
 function setAdminStatus(message, state = "success") {
   if (!adminFeedback) {
@@ -33,6 +37,30 @@ function updateSmtpStatus(email) {
   }
 }
 
+function updateKpis(settings, email) {
+  if (kpiSlotCapacity) {
+    kpiSlotCapacity.textContent = String(settings.slotCapacity || "--");
+  }
+
+  if (kpiBookingWindow) {
+    const days = Number(settings.bookingWindowDays || 0);
+    kpiBookingWindow.textContent = days > 0 ? `${days} days` : "--";
+  }
+
+  if (kpiSlotCount) {
+    const totalSlots = Array.isArray(settings.slotTimes) ? settings.slotTimes.length : 0;
+    kpiSlotCount.textContent = totalSlots > 0 ? String(totalSlots) : "--";
+  }
+
+  if (kpiSmtp) {
+    if (!email) {
+      kpiSmtp.textContent = "Unknown";
+      return;
+    }
+    kpiSmtp.textContent = email.smtpConfigured ? "Configured" : "Fallback mode";
+  }
+}
+
 async function loadAdminSettings() {
   try {
     const response = await fetch("/api/admin/settings");
@@ -57,10 +85,12 @@ async function loadAdminSettings() {
     }
 
     updateSmtpStatus(result.email);
+    updateKpis(result.settings || {}, result.email);
   } catch (error) {
     if (smtpStatus) {
       smtpStatus.textContent = "Could not load admin settings.";
     }
+    updateKpis({}, null);
     setAdminStatus(error.message || "Could not load admin settings.", "error");
   }
 }

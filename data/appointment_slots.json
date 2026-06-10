@@ -1,167 +1,5 @@
 [
   {
-    "slot_id": "2026-06-07|09:00|general",
-    "date": "2026-06-07",
-    "start_time": "09:00",
-    "end_time": "09:15",
-    "capacity": 2,
-    "practitioner_id": null,
-    "appointment_type": null
-  },
-  {
-    "slot_id": "2026-06-07|10:30|general",
-    "date": "2026-06-07",
-    "start_time": "10:30",
-    "end_time": "10:45",
-    "capacity": 2,
-    "practitioner_id": null,
-    "appointment_type": null
-  },
-  {
-    "slot_id": "2026-06-07|12:00|general",
-    "date": "2026-06-07",
-    "start_time": "12:00",
-    "end_time": "12:15",
-    "capacity": 2,
-    "practitioner_id": null,
-    "appointment_type": null
-  },
-  {
-    "slot_id": "2026-06-07|14:00|general",
-    "date": "2026-06-07",
-    "start_time": "14:00",
-    "end_time": "14:15",
-    "capacity": 2,
-    "practitioner_id": null,
-    "appointment_type": null
-  },
-  {
-    "slot_id": "2026-06-07|15:30|general",
-    "date": "2026-06-07",
-    "start_time": "15:30",
-    "end_time": "15:45",
-    "capacity": 2,
-    "practitioner_id": null,
-    "appointment_type": null
-  },
-  {
-    "slot_id": "2026-06-07|17:00|general",
-    "date": "2026-06-07",
-    "start_time": "17:00",
-    "end_time": "17:15",
-    "capacity": 2,
-    "practitioner_id": null,
-    "appointment_type": null
-  },
-  {
-    "slot_id": "2026-06-08|09:00|general",
-    "date": "2026-06-08",
-    "start_time": "09:00",
-    "end_time": "09:15",
-    "capacity": 2,
-    "practitioner_id": null,
-    "appointment_type": null
-  },
-  {
-    "slot_id": "2026-06-08|10:30|general",
-    "date": "2026-06-08",
-    "start_time": "10:30",
-    "end_time": "10:45",
-    "capacity": 2,
-    "practitioner_id": null,
-    "appointment_type": null
-  },
-  {
-    "slot_id": "2026-06-08|12:00|general",
-    "date": "2026-06-08",
-    "start_time": "12:00",
-    "end_time": "12:15",
-    "capacity": 2,
-    "practitioner_id": null,
-    "appointment_type": null
-  },
-  {
-    "slot_id": "2026-06-08|14:00|general",
-    "date": "2026-06-08",
-    "start_time": "14:00",
-    "end_time": "14:15",
-    "capacity": 2,
-    "practitioner_id": null,
-    "appointment_type": null
-  },
-  {
-    "slot_id": "2026-06-08|15:30|general",
-    "date": "2026-06-08",
-    "start_time": "15:30",
-    "end_time": "15:45",
-    "capacity": 2,
-    "practitioner_id": null,
-    "appointment_type": null
-  },
-  {
-    "slot_id": "2026-06-08|17:00|general",
-    "date": "2026-06-08",
-    "start_time": "17:00",
-    "end_time": "17:15",
-    "capacity": 2,
-    "practitioner_id": null,
-    "appointment_type": null
-  },
-  {
-    "slot_id": "2026-06-09|09:00|general",
-    "date": "2026-06-09",
-    "start_time": "09:00",
-    "end_time": "09:15",
-    "capacity": 2,
-    "practitioner_id": null,
-    "appointment_type": null
-  },
-  {
-    "slot_id": "2026-06-09|10:30|general",
-    "date": "2026-06-09",
-    "start_time": "10:30",
-    "end_time": "10:45",
-    "capacity": 2,
-    "practitioner_id": null,
-    "appointment_type": null
-  },
-  {
-    "slot_id": "2026-06-09|12:00|general",
-    "date": "2026-06-09",
-    "start_time": "12:00",
-    "end_time": "12:15",
-    "capacity": 2,
-    "practitioner_id": null,
-    "appointment_type": null
-  },
-  {
-    "slot_id": "2026-06-09|14:00|general",
-    "date": "2026-06-09",
-    "start_time": "14:00",
-    "end_time": "14:15",
-    "capacity": 2,
-    "practitioner_id": null,
-    "appointment_type": null
-  },
-  {
-    "slot_id": "2026-06-09|15:30|general",
-    "date": "2026-06-09",
-    "start_time": "15:30",
-    "end_time": "15:45",
-    "capacity": 2,
-    "practitioner_id": null,
-    "appointment_type": null
-  },
-  {
-    "slot_id": "2026-06-09|17:00|general",
-    "date": "2026-06-09",
-    "start_time": "17:00",
-    "end_time": "17:15",
-    "capacity": 2,
-    "practitioner_id": null,
-    "appointment_type": null
-  },
-  {
     "slot_id": "2026-06-10|09:00|general",
     "date": "2026-06-10",
     "start_time": "09:00",
@@ -749,6 +587,168 @@
   {
     "slot_id": "2026-06-20|17:00|general",
     "date": "2026-06-20",
+    "start_time": "17:00",
+    "end_time": "17:15",
+    "capacity": 2,
+    "practitioner_id": null,
+    "appointment_type": null
+  },
+  {
+    "slot_id": "2026-06-21|09:00|general",
+    "date": "2026-06-21",
+    "start_time": "09:00",
+    "end_time": "09:15",
+    "capacity": 2,
+    "practitioner_id": null,
+    "appointment_type": null
+  },
+  {
+    "slot_id": "2026-06-21|10:30|general",
+    "date": "2026-06-21",
+    "start_time": "10:30",
+    "end_time": "10:45",
+    "capacity": 2,
+    "practitioner_id": null,
+    "appointment_type": null
+  },
+  {
+    "slot_id": "2026-06-21|12:00|general",
+    "date": "2026-06-21",
+    "start_time": "12:00",
+    "end_time": "12:15",
+    "capacity": 2,
+    "practitioner_id": null,
+    "appointment_type": null
+  },
+  {
+    "slot_id": "2026-06-21|14:00|general",
+    "date": "2026-06-21",
+    "start_time": "14:00",
+    "end_time": "14:15",
+    "capacity": 2,
+    "practitioner_id": null,
+    "appointment_type": null
+  },
+  {
+    "slot_id": "2026-06-21|15:30|general",
+    "date": "2026-06-21",
+    "start_time": "15:30",
+    "end_time": "15:45",
+    "capacity": 2,
+    "practitioner_id": null,
+    "appointment_type": null
+  },
+  {
+    "slot_id": "2026-06-21|17:00|general",
+    "date": "2026-06-21",
+    "start_time": "17:00",
+    "end_time": "17:15",
+    "capacity": 2,
+    "practitioner_id": null,
+    "appointment_type": null
+  },
+  {
+    "slot_id": "2026-06-22|09:00|general",
+    "date": "2026-06-22",
+    "start_time": "09:00",
+    "end_time": "09:15",
+    "capacity": 2,
+    "practitioner_id": null,
+    "appointment_type": null
+  },
+  {
+    "slot_id": "2026-06-22|10:30|general",
+    "date": "2026-06-22",
+    "start_time": "10:30",
+    "end_time": "10:45",
+    "capacity": 2,
+    "practitioner_id": null,
+    "appointment_type": null
+  },
+  {
+    "slot_id": "2026-06-22|12:00|general",
+    "date": "2026-06-22",
+    "start_time": "12:00",
+    "end_time": "12:15",
+    "capacity": 2,
+    "practitioner_id": null,
+    "appointment_type": null
+  },
+  {
+    "slot_id": "2026-06-22|14:00|general",
+    "date": "2026-06-22",
+    "start_time": "14:00",
+    "end_time": "14:15",
+    "capacity": 2,
+    "practitioner_id": null,
+    "appointment_type": null
+  },
+  {
+    "slot_id": "2026-06-22|15:30|general",
+    "date": "2026-06-22",
+    "start_time": "15:30",
+    "end_time": "15:45",
+    "capacity": 2,
+    "practitioner_id": null,
+    "appointment_type": null
+  },
+  {
+    "slot_id": "2026-06-22|17:00|general",
+    "date": "2026-06-22",
+    "start_time": "17:00",
+    "end_time": "17:15",
+    "capacity": 2,
+    "practitioner_id": null,
+    "appointment_type": null
+  },
+  {
+    "slot_id": "2026-06-23|09:00|general",
+    "date": "2026-06-23",
+    "start_time": "09:00",
+    "end_time": "09:15",
+    "capacity": 2,
+    "practitioner_id": null,
+    "appointment_type": null
+  },
+  {
+    "slot_id": "2026-06-23|10:30|general",
+    "date": "2026-06-23",
+    "start_time": "10:30",
+    "end_time": "10:45",
+    "capacity": 2,
+    "practitioner_id": null,
+    "appointment_type": null
+  },
+  {
+    "slot_id": "2026-06-23|12:00|general",
+    "date": "2026-06-23",
+    "start_time": "12:00",
+    "end_time": "12:15",
+    "capacity": 2,
+    "practitioner_id": null,
+    "appointment_type": null
+  },
+  {
+    "slot_id": "2026-06-23|14:00|general",
+    "date": "2026-06-23",
+    "start_time": "14:00",
+    "end_time": "14:15",
+    "capacity": 2,
+    "practitioner_id": null,
+    "appointment_type": null
+  },
+  {
+    "slot_id": "2026-06-23|15:30|general",
+    "date": "2026-06-23",
+    "start_time": "15:30",
+    "end_time": "15:45",
+    "capacity": 2,
+    "practitioner_id": null,
+    "appointment_type": null
+  },
+  {
+    "slot_id": "2026-06-23|17:00|general",
+    "date": "2026-06-23",
     "start_time": "17:00",
     "end_time": "17:15",
     "capacity": 2,

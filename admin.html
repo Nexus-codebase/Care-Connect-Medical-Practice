@@ -15,7 +15,7 @@
     />
     <link rel="stylesheet" href="styles.css" />
   </head>
-  <body>
+  <body class="admin-page">
     <header class="site-header">
       <div class="container nav-shell">
         <a href="index.html" class="brand" aria-label="CareConnect GP Practice home">
@@ -30,6 +30,7 @@
           <a href="prescriptions.html">Prescriptions</a>
           <a href="booking.html">Appointments</a>
           <a href="contact.html">Contact</a>
+          <a href="portal.html">Portal</a>
           <a href="admin.html" aria-current="page">Admin</a>
         </nav>
       </div>
@@ -41,6 +42,27 @@
           <p class="eyebrow">Admin</p>
           <h1 class="section-title">Booking and email settings</h1>
           <p class="section-copy">Configure booking rules from the UI and confirm whether SMTP email delivery is enabled.</p>
+        </div>
+      </section>
+
+      <section class="section admin-kpi-section">
+        <div class="container admin-kpi-grid reveal">
+          <article class="admin-kpi-card">
+            <p class="admin-kpi-label">Slot capacity</p>
+            <p class="admin-kpi-value" id="kpi-slot-capacity">--</p>
+          </article>
+          <article class="admin-kpi-card">
+            <p class="admin-kpi-label">Booking window</p>
+            <p class="admin-kpi-value" id="kpi-booking-window">--</p>
+          </article>
+          <article class="admin-kpi-card">
+            <p class="admin-kpi-label">Configured slots</p>
+            <p class="admin-kpi-value" id="kpi-slot-count">--</p>
+          </article>
+          <article class="admin-kpi-card">
+            <p class="admin-kpi-label">SMTP status</p>
+            <p class="admin-kpi-value" id="kpi-smtp">Checking</p>
+          </article>
         </div>
       </section>
 

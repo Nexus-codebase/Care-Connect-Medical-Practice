@@ -1,0 +1,14 @@
+{
+  "notifications": [
+    {
+      "id": "NTF-SEED-001",
+      "type": "alert",
+      "title": "Portal initialized",
+      "message": "The full portal modules are now active.",
+      "patientId": null,
+      "appointmentId": null,
+      "read": false,
+      "createdAt": "2026-06-10T00:00:00.000Z"
+    }
+  ]
+}
