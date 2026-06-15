@@ -75,3 +75,7 @@ Without those variables, booking and cancellation still work and email messages 
 ## Architecture
 
 See [docs/architecture.md](docs/architecture.md) for the system design, API endpoints, data model, and booking flow.
+
+## User Flow Diagram
+
+See [docs/user-flow.html](docs/user-flow.html) for a visual patient, portal, and admin journey map.
