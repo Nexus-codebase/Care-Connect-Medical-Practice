@@ -51,15 +51,23 @@
         >
           Menu
         </button>
-
         <nav class="site-nav" id="site-nav" aria-label="Main navigation">
-          <a href="index.html" aria-current="page">Home</a>
+          <a href="index.html">Home</a>
           <a href="about.html">About</a>
           <a href="services.html">Services</a>
+          <details class="dropdown">
+            <summary class="drop-btn">More</summary>
+            <ul class="dropdown-menu">
+              <li><a href="test-results.html">Test Results</a></li>
+              <li><a href="register.html">Register</a></li>
+              <li><a href="feedback.html">Feedback</a></li>
+              <li><a href="cancel.html">Cancel</a></li>
+              <li><a href="privacy.html">Privacy</a></li>
+            </ul>
+          </details>
           <a href="prescriptions.html">Prescriptions</a>
           <a href="booking.html">Appointments</a>
           <a href="contact.html">Contact</a>
-          <a href="portal.html">Portal</a>
         </nav>
       </div>
     </header>
@@ -75,7 +83,7 @@
           </p>
 
           <div class="nhs-action-grid">
-            <a class="nhs-action-tile" href="booking.html">
+            <a class="nhs-action-tile" href="appointment.html">
               <h3>Appointments</h3>
               <p>Book, confirm, or cancel GP appointments online.</p>
             </a>
@@ -83,57 +91,15 @@
               <h3>Prescriptions</h3>
               <p>Request repeat medication and review support services.</p>
             </a>
-            <a class="nhs-action-tile" href="services.html">
+            <a class="nhs-action-tile" href="test-results.html">
               <h3>Test Results</h3>
               <p>Find guidance on how test results are reviewed.</p>
             </a>
-            <a class="nhs-action-tile" href="booking.html">
+            <a class="nhs-action-tile" href="register.html">
               <h3>Register with the GP practice</h3>
               <p>Accepting new patients for online GP registration.</p>
             </a>
           </div>
-        </div>
-      </section>
-
-      <section class="section">
-        <div class="container reveal">
-          <div class="nhs-alert">
-            <h2>Need urgent medical help?</h2>
-            <p>If you need urgent help for a life-threatening emergency, call 999. For urgent non-emergency advice, use 111.</p>
-          </div>
-        </div>
-      </section>
-
-      <section class="section" id="services">
-        <div class="container nhs-service-block reveal">
-          <h2 class="section-title">Services at this GP practice</h2>
-          <div class="nhs-links-grid">
-            <a href="services.html">General GP consultations</a>
-            <a href="services.html">Same-day appointments</a>
-            <a href="services.html">Vaccinations and preventive care</a>
-            <a href="services.html">Chronic condition reviews</a>
-            <a href="services.html">Telephone and video appointments</a>
-            <a href="services.html">Mental health support</a>
-            <a href="prescriptions.html">Prescriptions and medication requests</a>
-            <a href="booking.html">New patient registration</a>
-            <a href="booking.html">Online booking and confirmation</a>
-          </div>
-        </div>
-      </section>
-
-      <section class="section">
-        <div class="container nhs-info-grid reveal">
-          <article class="feature-card">
-            <h3>Opening times</h3>
-            <p><strong>Monday to Friday:</strong> 8:00 AM to 6:30 PM</p>
-            <p><strong>Saturday:</strong> 9:00 AM to 12:00 PM (pre-booked clinics)</p>
-            <p><strong>Sunday:</strong> Closed</p>
-          </article>
-          <article class="feature-card">
-            <h3 class="live-availability-title">Live Appointment Availability</h3>
-            <p id="availability-summary">Availability could not be loaded.</p>
-            <p class="helper-text">Each appointment slot has a fixed maximum capacity - once fully booked, slots will show as unavailable until a cancellation or new session is added.</p>
-          </article>
         </div>
       </section>
 
@@ -148,6 +114,17 @@
           </article>
         </div>
       </section>
+
+      <section class="section">
+        <div class="container nhs-info-grid reveal">
+          <article class="feature-card">
+            <h3>Opening times</h3>
+            <p><strong>Monday to Friday:</strong> 8:00 AM to 6:30 PM</p>
+            <p><strong>Saturday:</strong> 9:00 AM to 12:00 PM (pre-booked clinics)</p>
+            <p><strong>Sunday:</strong> Closed</p>
+          </article>
+        </div>
+      </section>
     </main>
 
     <footer class="site-footer" id="contact">
@@ -155,14 +132,23 @@
         <p><strong>Contact:</strong> +92-300-0000000</p>
         <p><strong>Email:</strong> careconnect@example.com</p>
         <p><strong>Location:</strong> Street 6, Near Hospital</p>
-        <p><strong>Timing:</strong> Mon to Thur, 9:00 AM - 6:00 PM</p>
+        <p><strong>Timing:</strong> Mon to Fri, 8:00 AM - 6:30 PM</p>
       </div>
       <p class="copyright">
         <span id="year"></span> CareConnect. All rights reserved.
       </p>
-      <p class="copyright">Accessibility statement | Website policies</p>
+      <p class="copyright">Accessibility statement | Website policies | Privacy notice</p>
+      <p class="copyright">Admin Access Only: <a href="portal-login.html">Appointments Portal</a> | <a href="admin.html">Admin Settings</a></p>
     </footer>
 
     <script src="script.js"></script>
   </body>
 </html>
+
+
+
+
+
+
+
+

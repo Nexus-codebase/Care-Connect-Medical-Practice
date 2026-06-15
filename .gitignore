@@ -1,4 +1,7 @@
 node_modules/
 .env
 coverage/
+public/*-LAPTOP-*.html
+public/*-LAPTOP-*.js
+public/*-LAPTOP-*.css
 

@@ -24,11 +24,20 @@
         <nav class="site-nav" id="site-nav" aria-label="Main navigation">
           <a href="index.html">Home</a>
           <a href="about.html">About</a>
-          <a href="services.html" aria-current="page">Services</a>
+          <a href="services.html">Services</a>
+          <details class="dropdown">
+            <summary class="drop-btn">More</summary>
+            <ul class="dropdown-menu">
+              <li><a href="test-results.html">Test Results</a></li>
+              <li><a href="register.html">Register</a></li>
+              <li><a href="feedback.html">Feedback</a></li>
+              <li><a href="cancel.html">Cancel</a></li>
+              <li><a href="privacy.html">Privacy</a></li>
+            </ul>
+          </details>
           <a href="prescriptions.html">Prescriptions</a>
           <a href="booking.html">Appointments</a>
           <a href="contact.html">Contact</a>
-          <a href="portal.html">Portal</a>
         </nav>
 
       </div>
@@ -44,6 +53,32 @@
       </section>
 
       <section class="section">
+        <div class="container reveal">
+          <div class="nhs-alert">
+            <h2>Need urgent medical help?</h2>
+            <p>If you need urgent help for a life-threatening emergency, call 999. For urgent non-emergency advice, use 111.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="services">
+        <div class="container nhs-service-block reveal">
+          <h2 class="section-title">Services at this GP practice</h2>
+          <div class="nhs-links-grid">
+            <a href="services.html#gp-clinics">General GP consultations</a>
+            <a href="appointment.html">Same-day appointments</a>
+            <a href="services.html#vaccinations">Vaccinations and preventive care</a>
+            <a href="services.html#gp-clinics">Chronic condition reviews</a>
+            <a href="booking.html">Telephone and video appointments</a>
+            <a href="services.html#wellbeing-support">Mental health support</a>
+            <a href="prescriptions.html">Prescriptions and medication requests</a>
+            <a href="register.html">New patient registration</a>
+            <a href="booking.html">Online booking and confirmation</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
         <div class="container card-grid">
           <article class="feature-card reveal">
             <h3>Sick (fit) notes</h3>
@@ -55,7 +90,7 @@
             <p>Get advice on checking recent blood tests, scans, and follow-up actions after results are reviewed.</p>
             <p><a href="contact.html">Contact us about test results</a></p>
           </article>
-          <article class="feature-card reveal">
+          <article class="feature-card reveal" id="vaccinations">
             <h3>Vaccinations</h3>
             <p>Book routine, travel, and seasonal vaccinations with eligibility guidance from our clinical team.</p>
             <p><a href="booking.html">Book a vaccination appointment</a></p>
@@ -70,7 +105,7 @@
             <p>Find out how to join CareConnect and what details are needed for new patient registration.</p>
             <p><a href="booking.html">Start new patient registration</a></p>
           </article>
-          <article class="feature-card reveal">
+          <article class="feature-card reveal" id="gp-clinics">
             <h3>GP clinics</h3>
             <p>Access a range of clinics including long-term condition reviews, preventive care, and routine follow-up.</p>
             <p><a href="booking.html">View and book clinic appointments</a></p>
@@ -95,7 +130,7 @@
             <p>Keep your name, address, email, and phone details up to date so we can contact you safely.</p>
             <p><a href="contact.html">Update your contact details</a></p>
           </article>
-          <article class="feature-card reveal">
+          <article class="feature-card reveal" id="wellbeing-support">
             <h3>Wellbeing support</h3>
             <p>Find local and national support for wellbeing, mental health, and healthy lifestyle changes.</p>
             <p><a href="contact.html">Get wellbeing signposting</a></p>
@@ -134,11 +169,22 @@
         <p><strong>Contact:</strong> +92-300-0000000</p>
         <p><strong>Email:</strong> careconnect@example.com</p>
         <p><strong>Location:</strong> Street 6, Near Hospital</p>
-        <p><strong>Timing:</strong> Mon to Thur, 9:00 AM - 6:00 PM</p>
+        <p><strong>Timing:</strong> Mon to Fri, 8:00 AM - 6:30 PM</p>
       </div>
       <p class="copyright"><span id="year"></span> CareConnect. All rights reserved.</p>
+      <p class="copyright">Accessibility statement | Website policies | Privacy notice</p>
+      <p class="copyright">Admin Access Only: <a href="portal-login.html">Appointments Portal</a> | <a href="admin.html">Admin Settings</a></p>
     </footer>
 
     <script src="script.js"></script>
   </body>
 </html>
+
+
+
+
+
+
+
+
+
