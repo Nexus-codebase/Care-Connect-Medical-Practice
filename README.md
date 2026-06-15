@@ -8,6 +8,9 @@ CareConnect is a responsive GP practice website with a server-backed appointment
 careconnect/
 ├── server.js
 ├── README.md
+├── PRD.md
+├── ROADMAP.md
+├── SPECIFICATION.md
 ├── package.json
 ├── jest.config.js
 ├── public/
@@ -23,6 +26,10 @@ careconnect/
 │   └── care_connect_flow.js
 ├── docs/
 │   └── architecture.md
+├── src/
+│   ├── README.md
+│   └── components/
+│       └── README.md
 ├── data/
 │   ├── appointments.json
 │   ├── appointment_slots.json
