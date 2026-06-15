@@ -1,4 +1,4 @@
-const settingsForm = document.querySelector("#admin-settings-form");
+﻿const settingsForm = document.querySelector("#admin-settings-form");
 const slotCapacityInput = document.querySelector("#slot-capacity");
 const bookingWindowInput = document.querySelector("#booking-window");
 const slotTimesInput = document.querySelector("#slot-times");
@@ -8,6 +8,10 @@ const kpiSlotCapacity = document.querySelector("#kpi-slot-capacity");
 const kpiBookingWindow = document.querySelector("#kpi-booking-window");
 const kpiSlotCount = document.querySelector("#kpi-slot-count");
 const kpiSmtp = document.querySelector("#kpi-smtp");
+
+const API_BASE = /github\.io$/i.test(window.location.hostname)
+  ? "https://careconnect-api.onrender.com"
+  : "";
 
 function setAdminStatus(message, state = "success") {
   if (!adminFeedback) {
@@ -63,7 +67,7 @@ function updateKpis(settings, email) {
 
 async function loadAdminSettings() {
   try {
-    const response = await fetch("/api/admin/settings");
+    const response = await fetch(API_BASE + "/api/admin/settings");
     const result = await response.json();
 
     if (!response.ok || !result.ok) {
@@ -106,7 +110,7 @@ if (settingsForm) {
     };
 
     try {
-      const response = await fetch("/api/admin/settings", {
+      const response = await fetch(API_BASE + "/api/admin/settings", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

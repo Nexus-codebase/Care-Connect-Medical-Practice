@@ -1,4 +1,9 @@
-(function () {
+﻿(function () {
+  // On GitHub Pages use deployed Render API; locally use relative paths
+  const API_BASE = /github\.io$/i.test(window.location.hostname)
+    ? "https://careconnect-api.onrender.com"
+    : "";
+
 const systemStatusText = document.querySelector("#system-status-text");
 
 const statPatients = document.querySelector("#stat-patients");
@@ -296,7 +301,7 @@ function renderPatientProfile(patient) {
               <strong>${patient.fullName || "-"}</strong>
               <span class="patient-status-badge patient-status-${status}">${status}</span>
             </div>
-            <p>${patient.id || "PT"} • ${age} years</p>
+            <p>${patient.id || "PT"} â€¢ ${age} years</p>
           </div>
         </div>
         <div class="patient-contact-grid">
@@ -394,7 +399,7 @@ function renderAppointmentsTable(rows) {
           <div class="appointment-row-main">
             <div class="appointment-row-title">
               <strong>${appointment.patientName || appointment.name || "-"}</strong>
-              <span>${appointment.displayDate || appointment.date || "-"} • ${appointment.appointment_id || appointment.id || "APT"}</span>
+              <span>${appointment.displayDate || appointment.date || "-"} â€¢ ${appointment.appointment_id || appointment.id || "APT"}</span>
             </div>
             <div class="appointment-row-meta">
               <span>${appointment.displayTime || appointment.time || "-"}</span>
@@ -474,7 +479,7 @@ function renderDashboardAppointments(rows) {
         <article class="dash-appointment-item">
           <div>
             <strong>${item.patientName || item.name || "Patient"}</strong>
-            <p>${item.displayTime || item.time || "--"} • ${item.type || "Consultation"}</p>
+            <p>${item.displayTime || item.time || "--"} â€¢ ${item.type || "Consultation"}</p>
           </div>
           <span class="patient-status-badge patient-status-${status.includes("cancel") ? "critical" : status.includes("resched") ? "recovering" : "stable"}">${item.status || "scheduled"}</span>
         </article>`;
@@ -583,7 +588,7 @@ function refreshPatientSelect() {
 }
 
 async function loadDashboard() {
-  const result = await requestJson("/api/system/dashboard");
+  const result = await requestJson(API_BASE + "/api/system/dashboard");
   if (statPatients) statPatients.textContent = String(result.stats.patients);
   if (statActive) statActive.textContent = String(result.stats.activeAppointments);
   if (statToday) {
@@ -595,7 +600,7 @@ async function loadDashboard() {
 
 async function loadPatients(query = "") {
   const params = query ? `?query=${encodeURIComponent(query)}` : "";
-  const result = await requestJson(`/api/system/patients${params}`);
+  const result = await requestJson(`${API_BASE}/api/system/patients${params}`);
   patientRows = Array.isArray(result.patients) ? result.patients : [];
   updatePatientDashboardStats(patientRows);
   renderPatientsTable(patientRows);
@@ -617,7 +622,7 @@ function applyPageQueryToPatientsSearch() {
 
 async function selectPatient(patientId) {
   selectedPatientId = patientId;
-  const result = await requestJson(`/api/system/patients/${encodeURIComponent(patientId)}`);
+  const result = await requestJson(`${API_BASE}/api/system/patients/${encodeURIComponent(patientId)}`);
   if (selectedPatientLabel) {
     selectedPatientLabel.textContent = `Selected: ${result.patient.fullName}`;
   }
@@ -625,7 +630,7 @@ async function selectPatient(patientId) {
 }
 
 async function loadAppointments() {
-  const result = await requestJson("/api/system/appointments");
+  const result = await requestJson(API_BASE + "/api/system/appointments");
   appointmentRows = Array.isArray(result.appointments) ? result.appointments : [];
   renderAppointmentsTable(appointmentRows);
   renderDashboardAppointments(appointmentRows);
@@ -634,13 +639,13 @@ async function loadAppointments() {
 }
 
 async function loadNotifications() {
-  const result = await requestJson("/api/system/notifications");
+  const result = await requestJson(API_BASE + "/api/system/notifications");
   notificationRows = Array.isArray(result.notifications) ? result.notifications : [];
   renderNotifications(notificationRows);
 }
 
 async function loadAvailabilityForScheduling() {
-  const result = await requestJson("/api/availability");
+  const result = await requestJson(API_BASE + "/api/availability");
   availabilityDates = Array.isArray(result.dates) ? result.dates : [];
   refreshScheduleDateOptions();
 }
@@ -651,7 +656,7 @@ async function quickReschedule(appointmentId) {
     return;
   }
 
-  await requestJson(`/api/system/appointments/${encodeURIComponent(appointmentId)}/reschedule`, {
+  await requestJson(`${API_BASE}/api/system/appointments/${encodeURIComponent(appointmentId)}/reschedule`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ date: scheduleDate.value, time: scheduleTime.value }),
@@ -662,7 +667,7 @@ async function quickReschedule(appointmentId) {
 }
 
 async function cancelAppointment(appointmentId) {
-  await requestJson(`/api/system/appointments/${encodeURIComponent(appointmentId)}/cancel`, {
+  await requestJson(`${API_BASE}/api/system/appointments/${encodeURIComponent(appointmentId)}/cancel`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ reason: "Canceled from portal table." }),
@@ -674,7 +679,7 @@ async function cancelAppointment(appointmentId) {
 
 async function loadProfile() {
   if (!currentUser) return;
-  const result = await requestJson(`/api/system/profile/${encodeURIComponent(currentUser.id)}`);
+  const result = await requestJson(`${API_BASE}/api/system/profile/${encodeURIComponent(currentUser.id)}`);
   if (profileName) {
     profileName.value = result.profile.name || "";
   }
@@ -737,7 +742,7 @@ if (addPatientForm) {
         medicalHistory: String(formData.get("medicalHistory") || "").trim(),
       };
 
-      const result = await requestJson("/api/system/patients", {
+      const result = await requestJson(API_BASE + "/api/system/patients", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -859,7 +864,7 @@ if (noteForm) {
         author: currentUser ? currentUser.name : "Staff",
       };
 
-      await requestJson(`/api/system/patients/${encodeURIComponent(selectedPatientId)}/notes`, {
+      await requestJson(`${API_BASE}/api/system/patients/${encodeURIComponent(selectedPatientId)}/notes`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -889,7 +894,7 @@ if (documentForm) {
         url: String(formData.get("url") || "").trim(),
       };
 
-      await requestJson(`/api/system/patients/${encodeURIComponent(selectedPatientId)}/documents`, {
+      await requestJson(`${API_BASE}/api/system/patients/${encodeURIComponent(selectedPatientId)}/documents`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -924,7 +929,7 @@ if (scheduleForm) {
         notes: String(formData.get("notes") || "").trim(),
       };
 
-      await requestJson("/api/system/appointments/schedule", {
+      await requestJson(API_BASE + "/api/system/appointments/schedule", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -949,7 +954,7 @@ if (alertForm) {
         patientId: selectedPatientId || null,
       };
 
-      await requestJson("/api/system/notifications/open-alert", {
+      await requestJson(API_BASE + "/api/system/notifications/open-alert", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -979,7 +984,7 @@ if (profileForm) {
         password: String(formData.get("password") || "").trim(),
       };
 
-      const result = await requestJson(`/api/system/profile/${encodeURIComponent(currentUser.id)}`, {
+      const result = await requestJson(`${API_BASE}/api/system/profile/${encodeURIComponent(currentUser.id)}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -1008,3 +1013,5 @@ if (logoutButton) {
 bootstrapPortal();
 applyPageQueryToPatientsSearch();
 })();
+
+

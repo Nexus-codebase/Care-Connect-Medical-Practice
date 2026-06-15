@@ -339,11 +339,14 @@ function populateDateOptions(preferredDate, preferredTime) {
 }
 
 async function loadAvailability(preferredDate = "", preferredTime = "") {
+  const apiBase = /github\.io$/i.test(window.location.hostname)
+    ? "https://careconnect-api.onrender.com"
+    : "";
   try {
     let result;
 
     try {
-      const response = await fetch("/api/availability", { cache: "no-store" });
+      const response = await fetch(apiBase + "/api/availability", { cache: "no-store" });
       const apiResult = await response.json();
 
       if (!response.ok || !apiResult.ok) {
@@ -666,7 +669,7 @@ if (form && feedback) {
     };
 
     try {
-      const response = await fetch("/api/appointments", {
+      const response = await fetch(apiBase + "/api/appointments", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -740,7 +743,7 @@ if (cancelForm) {
     }
 
     try {
-      const response = await fetch("/api/appointments/cancel", {
+      const response = await fetch(apiBase + "/api/appointments/cancel", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -788,7 +791,7 @@ if (prescriptionForm) {
     };
 
     try {
-      const response = await fetch("/api/prescriptions", {
+      const response = await fetch(apiBase + "/api/prescriptions", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

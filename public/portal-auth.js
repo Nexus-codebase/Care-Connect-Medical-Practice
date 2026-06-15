@@ -1,4 +1,9 @@
 (function () {
+  // On GitHub Pages use the deployed Render API; locally use relative paths
+  const API_BASE = /github\.io$/i.test(window.location.hostname)
+    ? "https://careconnect-api.onrender.com"
+    : "";
+
   const loginForm = document.querySelector("#portal-login-form");
   const signupForm = document.querySelector("#portal-signup-form");
   const authFeedback = document.querySelector("#portal-auth-feedback");
@@ -55,7 +60,7 @@
           password: String(formData.get("password") || "").trim(),
         };
 
-        const result = await requestJson("/api/system/auth/login", {
+        const result = await requestJson(API_BASE + "/api/system/auth/login", {
           method: "POST",
           body: JSON.stringify(payload),
         });
@@ -81,7 +86,7 @@
           password: String(formData.get("password") || "").trim(),
         };
 
-        await requestJson("/api/system/auth/signup", {
+        await requestJson(API_BASE + "/api/system/auth/signup", {
           method: "POST",
           body: JSON.stringify(payload),
         });

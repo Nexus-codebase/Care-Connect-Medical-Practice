@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: careconnect-api
+    runtime: node
+    buildCommand: npm install
+    startCommand: node server.js
+    plan: free
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: AUTH_SECRET
+        generateValue: true
+      - key: PORT
+        value: 3000
