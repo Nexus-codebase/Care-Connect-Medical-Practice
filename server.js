@@ -8,6 +8,7 @@ require("dotenv").config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const PUBLIC_DIR = path.join(__dirname, "public");
 const DATA_FILE = path.join(__dirname, "data", "appointments.json");
 const PRESCRIPTION_FILE = path.join(__dirname, "data", "prescriptions.json");
 const SLOT_FILE = path.join(__dirname, "data", "appointment_slots.json");
@@ -38,7 +39,8 @@ const DISPLAY_TIME_FORMATTER = new Intl.DateTimeFormat("en-US", {
 let cachedMailTransportPromise;
 
 app.use(express.json());
-app.use(express.static(__dirname));
+app.use(express.static(PUBLIC_DIR));
+app.use("/data", express.static(path.join(__dirname, "data")));
 
 function readJsonCollection(filePath, key) {
   if (!fs.existsSync(filePath)) {

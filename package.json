@@ -6,8 +6,8 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",
-    "generate-readme": "node care_connect_flow.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "generate-readme": "node scripts/care_connect_flow.js",
+    "test": "jest"
   },
   "keywords": [],
   "author": "",
@@ -19,5 +19,8 @@
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
     "nodemailer": "^6.10.1"
+  },
+  "devDependencies": {
+    "jest": "^30.4.2"
   }
 }

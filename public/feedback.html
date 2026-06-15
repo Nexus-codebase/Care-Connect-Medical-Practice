@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Feedback | CareConnect GP Practice</title>
+    <meta name="description" content="Share your feedback about CareConnect GP Practice services and patient experience." />
+    <link rel="manifest" href="site.webmanifest" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Source+Serif+4:wght@500;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container nav-shell">
+        <a href="index.html" class="brand" aria-label="CareConnect GP Practice home"><span class="brand-mark">C+</span><span>CareConnect GP Practice</span></a>
+        <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav">Menu</button>
+        <nav class="site-nav" id="site-nav" aria-label="Main navigation">
+          <a href="index.html">Home</a>
+          <a href="about.html">About</a>
+          <a href="services.html">Services</a>
+          <details class="dropdown">
+            <summary class="drop-btn">More</summary>
+            <ul class="dropdown-menu">
+              <li><a href="test-results.html">Test Results</a></li>
+              <li><a href="register.html">Register</a></li>
+              <li><a href="feedback.html">Feedback</a></li>
+              <li><a href="cancel.html">Cancel</a></li>
+              <li><a href="privacy.html">Privacy</a></li>
+            </ul>
+          </details>
+          <a href="prescriptions.html">Prescriptions</a>
+          <a href="booking.html">Appointments</a>
+          <a href="contact.html">Contact</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="section">
+        <div class="container reveal">
+          <p class="eyebrow">Feedback</p>
+          <h1 class="section-title">Tell us about your experience</h1>
+          <p class="section-copy">Your feedback helps improve appointments, prescriptions, and overall GP support services.</p>
+        </div>
+      </section>
+
+      <section class="section cancel-section">
+        <div class="container reveal">
+          <div class="cancel-shell">
+            <form class="cancel-form cancel-form-bottom" id="feedback-form" novalidate>
+              <div class="cancel-grid">
+                <label>
+                  Full name
+                  <input type="text" name="name" required />
+                </label>
+                <label>
+                  Email
+                  <input type="email" name="email" required />
+                </label>
+                <label>
+                  Feedback type
+                  <select name="type" required>
+                    <option value="">Select one</option>
+                    <option>Suggestion</option>
+                    <option>Compliment</option>
+                    <option>Service issue</option>
+                  </select>
+                </label>
+                <label class="field-span">
+                  Message
+                  <textarea name="message" rows="4" required></textarea>
+                </label>
+              </div>
+              <button class="btn btn-primary" type="submit">Submit feedback</button>
+              <p class="form-feedback">Thank you for helping us improve patient care.</p>
+            </form>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer" id="contact">
+      <div class="container footer-grid">
+        <p><strong>Contact:</strong> +92-300-0000000</p>
+        <p><strong>Email:</strong> careconnect@example.com</p>
+        <p><strong>Location:</strong> Street 6, Near Hospital</p>
+        <p><strong>Timing:</strong> Mon to Fri, 8:00 AM - 6:30 PM</p>
+      </div>
+      <p class="copyright"><span id="year"></span> CareConnect. All rights reserved.</p>
+      <p class="copyright">Accessibility statement | Website policies | Privacy notice</p>
+      <p class="copyright">Admin Access Only: <a href="portal-login.html">Appointments Portal</a> | <a href="admin.html">Admin Settings</a></p>
+    </footer>
+
+    <script src="script.js"></script>
+  </body>
+</html>
+
+
+
+
+
+
+
+
+

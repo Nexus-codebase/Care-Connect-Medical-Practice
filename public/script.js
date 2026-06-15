@@ -32,6 +32,141 @@ const availabilityBoard = document.querySelector("#availability-board");
 
 let currentStep = 0;
 let availabilityDates = [];
+const AVAILABILITY_REFRESH_MS = 30000;
+let availabilityRefreshTimer = null;
+
+function toDisplayDate(dateValue) {
+  const parsed = new Date(`${dateValue}T00:00:00`);
+  if (Number.isNaN(parsed.getTime())) {
+    return dateValue;
+  }
+
+  return parsed.toLocaleDateString("en-US", {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+  });
+}
+
+function toDisplayTime(timeValue) {
+  const [hoursRaw, minutesRaw] = String(timeValue || "").split(":");
+  const hours = Number(hoursRaw);
+  const minutes = Number(minutesRaw);
+
+  if (!Number.isInteger(hours) || !Number.isInteger(minutes)) {
+    return String(timeValue || "");
+  }
+
+  const normalizedHour = ((hours % 24) + 24) % 24;
+  const period = normalizedHour >= 12 ? "PM" : "AM";
+  const hour12 = normalizedHour % 12 || 12;
+  const minutePart = String(minutes).padStart(2, "0");
+  return `${hour12}:${minutePart} ${period}`;
+}
+
+function buildLocalAvailabilityResult(slots, appointments) {
+  const bookingsBySlot = new Map();
+
+  appointments
+    .filter((item) => item && item.status !== "canceled")
+    .forEach((item) => {
+      const slotKey = `${item.date}|${item.time}`;
+      bookingsBySlot.set(slotKey, (bookingsBySlot.get(slotKey) || 0) + 1);
+    });
+
+  const groupedByDate = new Map();
+  let defaultSlotCapacity = 1;
+
+  slots.forEach((slot) => {
+    if (!slot || !slot.date || !slot.start_time) {
+      return;
+    }
+
+    const slotCapacity = Number(slot.capacity) > 0 ? Number(slot.capacity) : 1;
+    defaultSlotCapacity = slotCapacity;
+    const slotKey = `${slot.date}|${slot.start_time}`;
+    const booked = bookingsBySlot.get(slotKey) || 0;
+    const remaining = Math.max(slotCapacity - booked, 0);
+    const full = remaining === 0;
+
+    const entry = {
+      label: toDisplayTime(slot.start_time),
+      time: slot.start_time,
+      booked,
+      capacity: slotCapacity,
+      remaining,
+      full,
+      unavailable: false,
+      available: !full,
+      status: full ? "full" : "available",
+    };
+
+    if (!groupedByDate.has(slot.date)) {
+      groupedByDate.set(slot.date, []);
+    }
+
+    groupedByDate.get(slot.date).push(entry);
+  });
+
+  const orderedDates = Array.from(groupedByDate.keys()).sort();
+  const dates = orderedDates.map((dateValue) => {
+    const slotsForDate = groupedByDate.get(dateValue).sort((a, b) => a.time.localeCompare(b.time));
+    return {
+      date: dateValue,
+      displayDate: toDisplayDate(dateValue),
+      slots: slotsForDate,
+    };
+  });
+
+  let nextAvailable = null;
+  for (const dateEntry of dates) {
+    const firstOpen = dateEntry.slots.find((slot) => slot.available);
+    if (firstOpen) {
+      nextAvailable = {
+        displayDate: dateEntry.displayDate,
+        displayTime: firstOpen.label,
+      };
+      break;
+    }
+  }
+
+  return {
+    ok: true,
+    slotCapacity: defaultSlotCapacity,
+    dates,
+    nextAvailable,
+  };
+}
+
+async function loadAvailabilityFromLocalFiles() {
+  const [slotResponse, appointmentResponse] = await Promise.all([
+    fetch("data/appointment_slots.json", { cache: "no-store" }),
+    fetch("data/appointments.json", { cache: "no-store" }),
+  ]);
+
+  if (!slotResponse.ok || !appointmentResponse.ok) {
+    throw new Error("Local availability data is not available.");
+  }
+
+  const [slotData, appointmentData] = await Promise.all([
+    slotResponse.json(),
+    appointmentResponse.json(),
+  ]);
+
+  const slots = Array.isArray(slotData) ? slotData : [];
+  const appointments = Array.isArray(appointmentData?.appointments) ? appointmentData.appointments : [];
+  return buildLocalAvailabilityResult(slots, appointments);
+}
+
+function startAvailabilityAutoRefresh() {
+  if (availabilityRefreshTimer) {
+    return;
+  }
+
+  availabilityRefreshTimer = window.setInterval(() => {
+    loadAvailability(dateSelect ? dateSelect.value : "");
+  }, AVAILABILITY_REFRESH_MS);
+}
 
 function setStatus(node, message, state = "success") {
   if (!node) {
@@ -205,12 +340,22 @@ function populateDateOptions(preferredDate, preferredTime) {
 
 async function loadAvailability(preferredDate = "", preferredTime = "") {
   try {
-    const response = await fetch("/api/availability");
-    const result = await response.json();
+    let result;
 
-    if (!response.ok || !result.ok) {
-      throw new Error(result.message || "Could not load availability.");
+    try {
+      const response = await fetch("/api/availability", { cache: "no-store" });
+      const apiResult = await response.json();
+
+      if (!response.ok || !apiResult.ok) {
+        throw new Error(apiResult.message || "Could not load availability.");
+      }
+
+      result = apiResult;
+    } catch (_apiError) {
+      result = await loadAvailabilityFromLocalFiles();
     }
+
+    const refreshedAt = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 
     availabilityDates = Array.isArray(result.dates) ? result.dates : [];
     if (dateSelect && timeSelect) {
@@ -220,9 +365,9 @@ async function loadAvailability(preferredDate = "", preferredTime = "") {
 
     if (availabilitySummary) {
       if (result.nextAvailable) {
-        availabilitySummary.textContent = `Next available: ${result.nextAvailable.displayDate} at ${result.nextAvailable.displayTime}. Each slot holds ${result.slotCapacity} booking${result.slotCapacity === 1 ? "" : "s"}.`;
+        availabilitySummary.textContent = `Next available: ${result.nextAvailable.displayDate} at ${result.nextAvailable.displayTime}. Each slot holds ${result.slotCapacity} booking${result.slotCapacity === 1 ? "" : "s"}. Updated ${refreshedAt}.`;
       } else {
-        availabilitySummary.textContent = "All current slots are full. Check back after a cancellation or expand the booking window.";
+        availabilitySummary.textContent = `All current slots are full. Check back after a cancellation or expand the booking window. Updated ${refreshedAt}.`;
       }
     }
   } catch (_error) {
@@ -234,7 +379,7 @@ async function loadAvailability(preferredDate = "", preferredTime = "") {
       setStatus(slotHelper, "Could not load live availability right now.", "error");
     }
     if (availabilitySummary) {
-      availabilitySummary.textContent = "Availability could not be loaded.";
+      availabilitySummary.textContent = "Live availability is temporarily unavailable. Please refresh or run the server to enable live updates.";
     }
     if (availabilityBoard) {
       availabilityBoard.innerHTML = '<p class="helper-text">Availability could not be loaded.</p>';
@@ -487,10 +632,7 @@ if (form && feedback) {
 
   syncStepVisibility();
   loadAvailability();
-
-  window.setInterval(() => {
-    loadAvailability(dateSelect ? dateSelect.value : "");
-  }, 30000);
+  startAvailabilityAutoRefresh();
 
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
@@ -568,6 +710,7 @@ if (form && feedback) {
 
 if (availabilitySummary && (!form || !feedback)) {
   loadAvailability();
+  startAvailabilityAutoRefresh();
 }
 
 if (cancelForm) {
