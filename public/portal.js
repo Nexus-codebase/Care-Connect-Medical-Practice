@@ -137,6 +137,15 @@ async function requestJson(url, options = {}) {
     ...options,
     headers,
   });
+  const contentType = (response.headers.get("content-type") || "").toLowerCase();
+  if (!contentType.includes("application/json")) {
+    const onStaticHost = /github\.io$/i.test(window.location.hostname);
+    const message = onStaticHost
+      ? "Portal features require the CareConnect API server. GitHub Pages hosts static files only."
+      : "Portal service is temporarily unavailable. Please try again shortly.";
+    throw new Error(message);
+  }
+
   const result = await response.json();
   if (!response.ok || result.ok === false) {
     throw new Error(result.message || "Request failed.");

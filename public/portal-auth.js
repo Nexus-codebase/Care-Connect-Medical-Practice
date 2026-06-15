@@ -19,6 +19,15 @@
       },
     });
 
+    const contentType = (response.headers.get("content-type") || "").toLowerCase();
+    if (!contentType.includes("application/json")) {
+      const onStaticHost = /github\.io$/i.test(window.location.hostname);
+      const message = onStaticHost
+        ? "Portal sign-in requires the CareConnect API server. The GitHub Pages site is static-only."
+        : "Portal service is temporarily unavailable. Please try again shortly.";
+      throw new Error(message);
+    }
+
     const result = await response.json();
     if (!response.ok || result.ok === false) {
       throw new Error(result.message || "Request failed.");
